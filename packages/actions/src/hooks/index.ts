@@ -93,6 +93,9 @@ export function useActionQuery<TData = unknown>(
     return unsub;
   }, [cacheKey, skip]);
 
+  const validatedRequestRef = useRef(validatedRequest);
+  validatedRequestRef.current = validatedRequest;
+
   // Fetch if cache is empty or stale.
   const fetchedKeyRef = useRef<string | null>(null);
   useEffect(() => {
@@ -104,7 +107,7 @@ export function useActionQuery<TData = unknown>(
     let cancelled = false;
     setIsFetching(true);
     setError(null);
-    void dispatchAction<TData>(actionId, validatedRequest).then((result) => {
+    void dispatchAction<TData>(actionId, validatedRequestRef.current).then((result) => {
       if (cancelled) return;
       setIsFetching(false);
       if (!result.ok) setError(result.error);
@@ -112,7 +115,8 @@ export function useActionQuery<TData = unknown>(
     return () => {
       cancelled = true;
     };
-  }, [actionId, cacheKey, skip, freshFor, validatedRequest]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actionId, cacheKey, skip, freshFor]);
 
   const refetch = useCallback(async () => {
     setIsFetching(true);

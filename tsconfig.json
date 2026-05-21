@@ -14,6 +14,7 @@
     { "path": "./packages/archetypes" },
     { "path": "./packages/platform-rules" },
     { "path": "./apps/patient" },
-    { "path": "./apps/operations-console" }
+    { "path": "./apps/operations-console" },
+    { "path": "./apps/denial-analyst" }
   ]
 }

@@ -20,10 +20,9 @@ import { z } from 'zod';
 const httpsUrl = z
   .string()
   .min(1, 'is required')
-  .url('must be a valid URL')
   .refine(
-    (v) => v.startsWith('https://') || v.startsWith('http://localhost'),
-    'must be https:// (or http://localhost for local dev)',
+    (v) => v.startsWith('https://') || v.startsWith('http://localhost') || v.startsWith('/'),
+    'must be https://, http://localhost for local dev, or a relative path',
   );
 
 /**

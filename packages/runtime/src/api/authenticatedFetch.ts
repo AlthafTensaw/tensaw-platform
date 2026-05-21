@@ -115,6 +115,11 @@ async function buildHeaders(
     headers.set('X-Clinic-Id', String(clinicId));
   }
 
+  // Bypass ngrok's interstitial warning page when hitting a dev backend
+  if (config.api.baseUrl.includes('ngrok')) {
+    headers.set('ngrok-skip-browser-warning', 'true');
+  }
+
   return headers;
 }
 
@@ -217,7 +222,14 @@ export async function authenticatedFetch<T = unknown>(
   // Validate success envelope shape, optionally with a data schema.
   const dataSchema = init.responseSchema ?? z.unknown();
   const successParse = apiSuccessSchema(dataSchema).safeParse(body);
+  
   if (!successParse.success) {
+    // TEMPORARY FALLBACK for legacy backends:
+    // If the body doesn't have a 'success' field, assume it's raw unwrapped data.
+    if (typeof body === 'object' && body !== null && !('success' in body)) {
+      return body as T;
+    }
+
     throw new ApiError(
       'PLATFORM_ENVELOPE_INVALID',
       response.status,

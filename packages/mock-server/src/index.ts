@@ -63,3 +63,90 @@ export {
 // Handlers
 export { buildARHandlers } from './handlers/arHandlers';
 export { resetMockARState } from './handlers/arState';
+
+// Denial Analysis Tool (PR-4 — rewritten against backend OpenAPI Day 12)
+export {
+  // Enums
+  ConfidenceEnum,
+  ClassificationSourceEnum,
+  ClassificationStateEnum,
+  OverrideReasonEnum,
+  PriorityChipEnum,
+  AgingBucketEnum,
+  BulkAcceptRejectReasonEnum,
+  // Schemas
+  DecimalStringSchema,
+  WorkflowStepSchema,
+  ClassificationSchema,
+  ClaimSummarySchema,
+  WorklistRowSchema,
+  WorklistResponseSchema,
+  WorklistRequestSchema,
+  AcceptRequestSchema,
+  OverrideRequestSchema,
+  CompleteRequestSchema,
+  StateTransitionResponseSchema,
+  BulkAcceptRequestSchema,
+  BulkAcceptRejectionSchema,
+  BulkAcceptResponseSchema,
+  DailyCostRowSchema,
+  CostSummarySchema,
+  CostQuerySchema,
+  // Phase 1.5
+  ClaimDetailSchema,
+  DenialEventSchema,
+  DenialEventCodeSchema,
+  DenialEventListSchema,
+  StepCompletionRequestSchema,
+  StepCompletionResponseSchema,
+  RevealPhiRequestSchema,
+  RevealPhiResponseSchema,
+  RevealPhiPurposeEnum,
+  // Constants
+  CATEGORY_VALUES,
+  OVERRIDE_REASON_COPY,
+  // Types
+  type Confidence,
+  type ClassificationSource,
+  type ClassificationState,
+  type OverrideReason,
+  type PriorityChip,
+  type AgingBucket,
+  type BulkAcceptRejectReason,
+  type WorkflowStep,
+  type Classification,
+  type ClaimSummary,
+  type WorklistRow,
+  type WorklistResponse,
+  type WorklistRequest,
+  type AcceptRequest,
+  type OverrideRequest,
+  type CompleteRequest,
+  type StateTransitionResponse,
+  type BulkAcceptRequest,
+  type BulkAcceptRejection,
+  type BulkAcceptResponse,
+  type DailyCostRow,
+  type CostSummary,
+  type CostQuery,
+  type Category,
+  // Phase 1.5
+  type ClaimDetail,
+  type DenialEvent,
+  type DenialEventCode,
+  type StepCompletionRequest,
+  type StepCompletionResponse,
+  type RevealPhiRequest,
+  type RevealPhiResponse,
+  type RevealPhiPurpose,
+} from './schemas/denial';
+
+export {
+  WORKLIST_ROWS,
+  WORKLIST_FIXTURE_META,
+} from './fixtures/denial/recommendations';
+
+export { buildCostSummary } from './fixtures/denial/costDaily';
+
+export { buildDenialHandlers } from './handlers/denialHandlers';
+export { resetMockDenialState } from './handlers/denialState';
