@@ -55,13 +55,14 @@ export function RowDetailPanel({ row, onMutated }: RowDetailPanelProps) {
   const state = classification.state;
 
   // Phase 1.5 — fat claim detail + denial events fetched on expand
-  const { data: claimDetail, isLoading: detailLoading } = useActionQuery<ClaimDetail>('denial.claim-detail', { claimId: claim.claim_id });
+  const { data: claimDetail, isLoading: detailLoading } = useActionQuery<ClaimDetail>('denial.claim-detail', { claim_id: claim.claim_id });
 
-  const { data: eventsData, isLoading: eventsLoading } = useActionQuery<DenialEvent[]>('denial.denial-events', { claimId: claim.claim_id });
+  const { data: eventsData, isLoading: eventsLoading } = useActionQuery<DenialEvent[]>('denial.denial-events', { claim_id: claim.claim_id });
 
   const isWorkedOutsideTool =
     claim.current_status_label !== null &&
     claim.current_status_label !== 'Denied';
+    console.log("detail: ", claimDetail)
 
   return (
     <div className="bg-muted/10">
@@ -131,10 +132,10 @@ export function RowDetailPanel({ row, onMutated }: RowDetailPanelProps) {
       <div className="px-4 py-3 bg-muted/40 border-t border-border flex gap-2 items-center">
         {state === 'recommended' && canAct ? (
           isWorkedOutsideTool ? (
-            <ActionButton<{ classificationId: string; body: { reason: string } }, StateTransitionResponse>
+            <ActionButton<{ classification_id: string; body: { reason: string } }, StateTransitionResponse>
               actionId="denial.override"
               request={{
-                classificationId,
+                classification_id: classificationId,
                 body: { reason: 'worked_outside_tool' },
               }}
               variant="primary"
@@ -144,9 +145,9 @@ export function RowDetailPanel({ row, onMutated }: RowDetailPanelProps) {
               Mark as worked outside tool
             </ActionButton>
           ) : (
-            <ActionButton<{ classificationId: string; body: object }, StateTransitionResponse>
+            <ActionButton<{ classification_id: string; body: object }, StateTransitionResponse>
               actionId="denial.accept"
-              request={{ classificationId, body: {} }}
+              request={{ classification_id: classificationId, body: {} }}
               variant="primary"
               toastOnSuccess="Accepted"
               onSuccess={onMutated}
@@ -166,9 +167,9 @@ export function RowDetailPanel({ row, onMutated }: RowDetailPanelProps) {
         ) : null}
 
         {(state === 'accepted' || state === 'overridden') && canAct ? (
-          <ActionButton<{ classificationId: string; body: object }, StateTransitionResponse>
+          <ActionButton<{ classification_id: string; body: object }, StateTransitionResponse>
             actionId="denial.complete"
-            request={{ classificationId, body: {} }}
+            request={{ classification_id: classificationId, body: {} }}
             variant="primary"
             toastOnSuccess="Marked complete"
             onSuccess={onMutated}
@@ -178,9 +179,9 @@ export function RowDetailPanel({ row, onMutated }: RowDetailPanelProps) {
         ) : null}
 
         {canReclassify && state !== 'completed' ? (
-          <ActionButton<{ claimId: number }, unknown>
+          <ActionButton<{ claim_id: number }, unknown>
             actionId="denial.classify-claim"
-            request={{ claimId: claim.claim_id }}
+            request={{ claim_id: claim.claim_id }}
             variant="ghost"
             toastOnSuccess="Re-classified"
             onSuccess={onMutated}

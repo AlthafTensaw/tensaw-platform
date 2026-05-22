@@ -34,7 +34,7 @@ export const Pill = forwardRef<HTMLSpanElement, PillProps>(function Pill(
       ref={ref}
       className={cn(
         'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium',
-        variant === 'default' && 'bg-secondary text-secondary-foreground',
+        variant === 'default' && 'bg-secondary  -foreground',
         variant === 'subtle' && 'bg-muted text-muted-foreground',
         className,
       )}

@@ -81,7 +81,7 @@ export function DocumentViewer({
   };
 
   const filenameStyle: CSSProperties = {
-    color: 'var(--tw-color-text-secondary, #6B7280)',
+    color: 'var(--tw-color- , #6B7280)',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',

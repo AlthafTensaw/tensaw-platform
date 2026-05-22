@@ -58,7 +58,7 @@ export function ModeToggle<T extends string>({
                     : 'var(--tw-color-surface-subtle, #F3F4F6)',
                   color: active
                     ? 'var(--tw-color-text-accent, #218D8D)'
-                    : 'var(--tw-color-text-secondary, #4B5563)',
+                    : 'var(--tw-color- , #4B5563)',
                 }}
               >
                 {opt.count}
@@ -90,7 +90,7 @@ const buttonStyle: CSSProperties = {
   padding: '0 12px',
   background: 'transparent',
   border: 'none',
-  color: 'var(--tw-color-text-secondary, #4B5563)',
+  color: 'var(--tw-color- , #4B5563)',
   fontSize: 12,
   fontWeight: 500,
   cursor: 'pointer',

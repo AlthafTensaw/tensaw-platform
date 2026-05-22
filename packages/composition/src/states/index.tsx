@@ -35,7 +35,7 @@ const containerStyle = (compact: boolean): CSSProperties => ({
   padding: compact ? 12 : 24,
   gap: 8,
   fontFamily: 'system-ui, sans-serif',
-  color: 'var(--tw-color-text-secondary, #4B5563)',
+  color: 'var(--tw-color- , #4B5563)',
   minHeight: compact ? 80 : 140,
 });
 

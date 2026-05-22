@@ -117,7 +117,7 @@ export function TimelineEntry({
   const bodyStyle: CSSProperties = {
     marginTop: 4,
     fontSize: 12,
-    color: 'var(--tw-color-text-secondary, #4B5563)',
+    color: 'var(--tw-color- , #4B5563)',
     lineHeight: 1.5,
   };
 

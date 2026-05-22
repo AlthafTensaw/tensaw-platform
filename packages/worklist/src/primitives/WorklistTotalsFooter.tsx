@@ -104,14 +104,14 @@ const containerStyle: CSSProperties = {
 };
 
 const leftSlot: CSSProperties = {
-  color: 'var(--tw-color-text-secondary, #4B5563)',
+  color: 'var(--tw-color- , #4B5563)',
 };
 
 const rightSlot: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 14,
-  color: 'var(--tw-color-text-secondary, #4B5563)',
+  color: 'var(--tw-color- , #4B5563)',
 };
 
 const mutedText: CSSProperties = {

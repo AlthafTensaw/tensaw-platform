@@ -20,7 +20,7 @@
 
 import { PrivacyField as PlatformPrivacyField } from '@tensaw/design-system/rcm';
 import { TextField } from '@tensaw/design-system/primitives';
-import { IconButton } from '@tensaw/design-system/primitives';
+import { IconButton, Icon } from '@tensaw/design-system/primitives';
 import { useActionMutation } from '@tensaw/actions';
 import type { RevealPhiPurpose } from '../actions/schemas';
 import { usePermissions } from '../auth/permissions';
@@ -103,12 +103,12 @@ export function PrivacyField({
           </span>
           {gateOk ? (
             <IconButton
-              icon={isRevealed ? 'eye-off' : 'eye'}
+              icon={<Icon name={isRevealed ? 'EyeOff' : 'Eye'} size="xs" className="text-muted-foreground" aria-hidden />}
               size="sm"
               variant="ghost"
               aria-label={isRevealed ? 'Hide sensitive data' : 'Reveal sensitive data'}
               onClick={toggleReveal}
-              className="ml-1"
+              className="ml-1 opacity-60 hover:opacity-100 transition-opacity"
             />
           ) : null}
         </span>

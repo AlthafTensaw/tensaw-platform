@@ -73,7 +73,7 @@ export function DenialFilterStrip({
         }
         options={STATE_OPTIONS}
         aria-label="State"
-        className="w-44 bg-transparent"
+        className="w-44 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
       <Select
         value={filters.primary_category ?? '_all_'}
@@ -82,14 +82,14 @@ export function DenialFilterStrip({
         }
         options={CATEGORY_OPTIONS}
         aria-label="Category"
-        className="w-56 bg-transparent"
+        className="w-56 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
       <Select
         value={filters.payer_name ?? '_all_'}
         onValueChange={(v: string) => update({ payer_name: v === '_all_' ? undefined : v })}
         options={PAYER_OPTIONS}
         aria-label="Payer"
-        className="w-44 bg-transparent"
+        className="w-44 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
       <Select
         value={filters.recommended_owner ?? '_all_'}
@@ -98,14 +98,14 @@ export function DenialFilterStrip({
         }
         options={OWNER_OPTIONS}
         aria-label="Owner"
-        className="w-44 bg-transparent"
+        className="w-44 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
       <Select
         value={filters.age_bucket ?? '_all_'}
         onValueChange={(v: string) => update({ age_bucket: v === '_all_' ? undefined : v })}
         options={AGING_OPTIONS}
         aria-label="Aging"
-        className="w-40 bg-transparent"
+        className="w-40 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
       <Select
         value={filters.priority_chip ?? '_all_'}
@@ -116,7 +116,7 @@ export function DenialFilterStrip({
         }
         options={PRIORITY_OPTIONS}
         aria-label="Priority"
-        className="w-44 bg-transparent"
+        className="w-44 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
 
       {filters.requires_human_review ? (

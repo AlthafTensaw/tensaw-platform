@@ -77,7 +77,7 @@ export function DefinitionPanel({
   const dividerStyle: CSSProperties = {
     width: '100%',
     height: 1,
-    background: 'var(--tw-color-text-secondary, #6B7280)',
+    background: 'var(--tw-color- , #6B7280)',
   };
 
   const fractionHalfStyle: CSSProperties = {

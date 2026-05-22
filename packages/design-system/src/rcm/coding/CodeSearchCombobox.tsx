@@ -316,7 +316,7 @@ const containerStyle: CSSProperties = {
 const labelStyle: CSSProperties = {
   fontSize: 13,
   fontWeight: 500,
-  color: 'var(--tw-color-text-secondary, #4B5563)',
+  color: 'var(--tw-color- , #4B5563)',
 };
 
 const inputWrapperStyle = (error: string | null | undefined): CSSProperties => ({

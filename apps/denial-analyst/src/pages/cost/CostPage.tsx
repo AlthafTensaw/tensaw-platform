@@ -83,7 +83,7 @@ export function CostPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 text-secondary p-6">
+      <div className="flex items-center gap-2   p-6">
         <Spinner /> Loading cost data…
       </div>
     );
@@ -103,7 +103,7 @@ export function CostPage() {
     <div className="p-6 flex flex-col gap-4">
       <div>
         <h1 className="text-2xl font-semibold">LLM cost</h1>
-        <p className="text-sm text-secondary mt-1">
+        <p className="text-sm   mt-1">
           Daily spend on the denial-classifier service. Last 30 days.
         </p>
       </div>
@@ -111,7 +111,7 @@ export function CostPage() {
       {/* Totals strip */}
       <div className="grid grid-cols-3 gap-3">
         <Card padding="md">
-          <div className="text-xs uppercase tracking-wide text-secondary">
+          <div className="text-xs uppercase tracking-wide  ">
             Total cost
           </div>
           <div className="text-2xl font-semibold mt-1 tabular-nums">
@@ -119,7 +119,7 @@ export function CostPage() {
           </div>
         </Card>
         <Card padding="md">
-          <div className="text-xs uppercase tracking-wide text-secondary">
+          <div className="text-xs uppercase tracking-wide  ">
             LLM calls
           </div>
           <div className="text-2xl font-semibold mt-1 tabular-nums">
@@ -127,7 +127,7 @@ export function CostPage() {
           </div>
         </Card>
         <Card padding="md">
-          <div className="text-xs uppercase tracking-wide text-secondary">
+          <div className="text-xs uppercase tracking-wide  ">
             Avg cost / day
           </div>
           <div className="text-2xl font-semibold mt-1 tabular-nums">

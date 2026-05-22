@@ -111,7 +111,7 @@ export const MultiSelect = forwardRef<
           {chips.map((opt) => (
             <span
               key={opt.value}
-              className="inline-flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground"
+              className="inline-flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 text-xs  -foreground"
             >
               {opt.label}
               <span

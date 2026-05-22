@@ -116,7 +116,7 @@ export function DirtyStateGuard() {
 
   const bodyStyle: CSSProperties = {
     fontSize: 13,
-    color: 'var(--tw-color-text-secondary, #4B5563)',
+    color: 'var(--tw-color- , #4B5563)',
     lineHeight: 1.5,
     margin: 0,
     marginBottom: 16,

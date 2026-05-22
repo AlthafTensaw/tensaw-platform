@@ -63,7 +63,7 @@ export function DenialEventsList({
 }: DenialEventsListProps) {
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-secondary">
+      <div className="flex items-center gap-2 text-sm  ">
         <Spinner size="sm" /> Loading denial events…
       </div>
     );
@@ -92,7 +92,7 @@ export function DenialEventsList({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="text-xs uppercase tracking-wide text-secondary font-medium">
+      <div className="text-xs uppercase tracking-wide   font-medium">
         Source evidence · {visible.length}{' '}
         {visible.length === 1 ? 'event' : 'events'}
       </div>
@@ -101,7 +101,7 @@ export function DenialEventsList({
           key={event.event_id}
           className="bg-secondary rounded-md p-2.5 flex flex-col gap-1.5"
         >
-          <div className="text-xs text-secondary">
+          <div className="text-xs  ">
             {formatDate(event.occurred_at)} · CPT{' '}
             <code className="font-mono">{event.procedure_code ?? '—'}</code> ·
             event #{event.event_id}

@@ -429,7 +429,7 @@ const containerStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   fontSize: 'var(--tw-fs-base)',
   fontWeight: 'var(--tw-fw-medium)',
-  color: 'var(--tw-color-text-secondary)',
+  color: 'var(--tw-color- )',
 };
 
 const viewButtonStyle = (disabled?: boolean): React.CSSProperties => ({

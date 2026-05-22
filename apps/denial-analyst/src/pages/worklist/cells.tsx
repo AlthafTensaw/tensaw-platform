@@ -105,9 +105,9 @@ export function ClaimPatientCell({ row }: { row: WorklistRow }) {
       <div className="font-medium text-sm">
         {row.claim.claim_id}
         {' · '}
-        <span className="text-secondary tracking-wider">•••••••••</span>
+        <span className="  tracking-wider">•••••••••</span>
       </div>
-      <div className="text-xs text-secondary mt-0.5">
+      <div className="text-xs   mt-0.5">
         {row.claim.primary_payer_name ?? '—'} · {row.claim.aging_bucket ?? '—'}
       </div>
     </div>
@@ -164,7 +164,7 @@ export function NextActionCell({ row }: { row: WorklistRow }) {
 
   if (steps.length === 0) {
     return (
-      <span className="text-secondary italic text-xs">
+      <span className="  italic text-xs">
         No action steps defined yet
       </span>
     );
@@ -180,7 +180,7 @@ export function NextActionCell({ row }: { row: WorklistRow }) {
   return (
     <div className="text-xs">
       <div className="font-medium">{next.action}</div>
-      <div className="text-secondary mt-0.5">
+      <div className="  mt-0.5">
         {next.owner} · {next.sla_days} day SLA
       </div>
     </div>

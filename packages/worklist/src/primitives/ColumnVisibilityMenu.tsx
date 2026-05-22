@@ -173,7 +173,7 @@ const countPill: CSSProperties = {
   alignItems: 'center',
   padding: '0 6px',
   background: 'var(--tw-color-surface-subtle, #F3F4F6)',
-  color: 'var(--tw-color-text-secondary, #4B5563)',
+  color: 'var(--tw-color- , #4B5563)',
   borderRadius: 999,
   fontSize: 10,
   fontWeight: 600,

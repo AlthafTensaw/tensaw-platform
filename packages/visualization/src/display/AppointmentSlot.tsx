@@ -99,7 +99,7 @@ export function AppointmentSlot({
 
   const financialStyle: CSSProperties = {
     fontSize: 11,
-    color: 'var(--tw-color-text-secondary, #4B5563)',
+    color: 'var(--tw-color- , #4B5563)',
     fontFamily: 'JetBrains Mono, ui-monospace, monospace',
     marginTop: 2,
   };

@@ -20,7 +20,7 @@ const badgeVariants = cva(
       variant: {
         default: 'border-transparent bg-primary text-primary-foreground',
         secondary:
-          'border-transparent bg-secondary text-secondary-foreground',
+          'border-transparent bg-secondary  -foreground',
         success: 'border-transparent bg-green-100 text-green-800',
         warning: 'border-transparent bg-amber-100 text-amber-800',
         error: 'border-transparent bg-red-100 text-red-800',

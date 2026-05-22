@@ -58,7 +58,7 @@ foreground has a paired background.
 | Token | Tailwind class | Use |
 | --- | --- | --- |
 | `--primary` | `bg-primary` / `text-primary-foreground` | Primary actions; brand accent |
-| `--secondary` | `bg-secondary` / `text-secondary-foreground` | Secondary actions |
+| `--secondary` | `bg-secondary` / ` -foreground` | Secondary actions |
 | `--destructive` | `bg-destructive` / `text-destructive-foreground` | Delete, void, irreversible actions |
 
 ### Border + ring

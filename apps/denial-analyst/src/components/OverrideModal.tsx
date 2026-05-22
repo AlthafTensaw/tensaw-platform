@@ -16,6 +16,7 @@
  * via the worked-outside-tool shortcut button on the row detail.
  */
 
+import { z } from 'zod';
 import { Dialog } from '@tensaw/design-system/overlays';
 import { ActionForm } from '@tensaw/wired-components';
 import { Button } from '@tensaw/design-system/primitives';
@@ -58,10 +59,11 @@ export function OverrideModal({
       description={`Current: ${classification.primary_category}`}
       size="md"
     >
-      <ActionForm<OverrideRequest, unknown>
+      <ActionForm<OverrideRequest & { classification_id: string }, unknown>
         actionId="denial.override"
-        schema={OverrideRequestSchema}
+        schema={OverrideRequestSchema.extend({ classification_id: z.string().uuid() })}
         defaultValues={{
+          classification_id: classification.classification_id,
           reason: undefined,
           corrected_category: undefined,
           corrected_branch: undefined,
@@ -131,7 +133,7 @@ export function OverrideModal({
                 />
               </div>
 
-              <div className="flex gap-2 justify-end pt-2 border-t border-tertiary">
+              <div className="flex gap-2 justify-end pt-2 border-t border-border">
                 <Button
                   variant="ghost"
                   type="button"

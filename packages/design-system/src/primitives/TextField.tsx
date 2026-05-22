@@ -62,7 +62,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
           style={{
             fontSize: 'var(--tw-fs-base)',
             fontWeight: 'var(--tw-fw-medium)',
-            color: 'var(--tw-color-text-secondary)',
+            color: 'var(--tw-color- )',
           }}
         >
           {label}

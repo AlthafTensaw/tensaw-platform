@@ -261,14 +261,14 @@ export function DataExplorer<TRow>({
   return (
     <section
       aria-label={ariaLabel}
-      className={['flex flex-col gap-3', className].filter(Boolean).join(' ')}
+      className={['flex flex-col', className].filter(Boolean).join(' ')}
     >
       {actions !== undefined && (
-        <div className="flex items-center justify-between gap-2">{actions}</div>
+        <div className="flex items-center justify-between gap-2 px-5 pt-3">{actions}</div>
       )}
 
       {/* Toolbar */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4 px-5 py-3">
         <div className="relative flex-1">
           <span
             className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -336,7 +336,7 @@ export function DataExplorer<TRow>({
       </div>
 
       {filters !== undefined && (
-        <div className="flex flex-wrap items-center gap-2">{filters}</div>
+        <div className="w-full border-t border-border bg-muted/30">{filters}</div>
       )}
 
       {showBulkRow && (

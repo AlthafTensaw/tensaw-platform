@@ -31,7 +31,8 @@ async function doBootstrap(): Promise<void> {
 
   // Start MSW only in development and if we aren't pointing at a remote backend.
   // In test, msw/node is wired by vitest.setup.ts. In production, the real backend handles requests.
-  const isRemoteBackend = import.meta.env.VITE_API_BASE_URL?.includes('ngrok');
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const isRemoteBackend = baseUrl.includes('ngrok') || baseUrl.includes('primrose.health') || (baseUrl.startsWith('http') && !baseUrl.includes('localhost'));
   
   if (import.meta.env.DEV && !isRemoteBackend) {
     try {
