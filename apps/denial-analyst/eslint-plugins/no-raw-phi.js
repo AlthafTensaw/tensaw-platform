@@ -28,30 +28,54 @@
 
 'use strict';
 
-const PHI_FIELDS = [
+const DEFAULT_PHI_FIELDS = [
   'reason_text',
+  'denial_reason',
+  'patient_first_name',
+  'patient_last_name',
   'patient_identifier',
   'subscriber_id',
   'member_id',
   'subscriber_name',
 ];
 
-module.exports = {
+export const noRawPhi = {
   meta: {
     type: 'problem',
     docs: {
       description:
         'Disallow rendering raw PHI fields without <PrivacyField> wrapper.',
     },
-    schema: [],
+    schema: [
+      {
+        type: 'object',
+        properties: {
+          wrapperComponentName: {
+            type: 'string',
+          },
+          phiFields: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        },
+        additionalProperties: false,
+      },
+    ],
     messages: {
       rawPhi:
-        'PHI field "{{field}}" must be wrapped in <PrivacyField value={...}>. Importing the raw value into JSX is not allowed.',
+        'PHI field "{{path}}" must be wrapped in <PrivacyField value={...}>. Importing the raw value into JSX is not allowed.',
     },
   },
 
   create(context) {
-    // Track whether we're inside a <PrivacyField value={...}> attribute.
+    const options = context.options[0] || {};
+    const wrapperComponentName = options.wrapperComponentName || 'PrivacyField';
+    const customFields = options.phiFields || [];
+    const phiFields = DEFAULT_PHI_FIELDS.concat(customFields);
+
+    // Track whether we're inside a <WrapperComponent value={...}> attribute.
     let privacyFieldAttrDepth = 0;
 
     function enterPrivacyAttr() {
@@ -69,7 +93,7 @@ module.exports = {
           parent.type === 'JSXOpeningElement' &&
           parent.name &&
           parent.name.type === 'JSXIdentifier' &&
-          parent.name.name === 'PrivacyField'
+          parent.name.name === wrapperComponentName
         ) {
           enterPrivacyAttr();
         }
@@ -81,7 +105,7 @@ module.exports = {
           parent.type === 'JSXOpeningElement' &&
           parent.name &&
           parent.name.type === 'JSXIdentifier' &&
-          parent.name.name === 'PrivacyField'
+          parent.name.name === wrapperComponentName
         ) {
           leavePrivacyAttr();
         }
@@ -92,7 +116,7 @@ module.exports = {
         if (
           node.property &&
           node.property.type === 'Identifier' &&
-          PHI_FIELDS.includes(node.property.name)
+          phiFields.includes(node.property.name)
         ) {
           // Only flag if we're inside JSX
           let p = node.parent;
@@ -111,11 +135,17 @@ module.exports = {
             context.report({
               node,
               messageId: 'rawPhi',
-              data: { field: node.property.name },
+              data: { path: node.property.name },
             });
           }
         }
       },
     };
+  },
+};
+
+export default {
+  rules: {
+    'no-raw-phi': noRawPhi,
   },
 };

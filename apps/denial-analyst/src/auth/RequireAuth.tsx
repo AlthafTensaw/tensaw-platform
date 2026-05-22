@@ -42,11 +42,11 @@ export function RequirePermission({
     const next = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/sign-in?next=${next}`} replace />;
   }
-  if (!user.permissions?.includes(permission)) {
+  if (!user.permissions.includes(permission)) {
     return (
-      <div className="p-10 max-w-[480px] mx-auto text-center text-foreground">
-        <h2 className="text-xl font-medium mb-2">Insufficient access</h2>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+      <div style={forbiddenStyle}>
+        <h2 style={forbiddenTitleStyle}>Insufficient access</h2>
+        <p style={forbiddenBodyStyle}>
           This view requires the <code>{permission}</code> permission.
           Your account does not have it. Contact your tenant administrator
           if you believe this is an error.
@@ -56,3 +56,23 @@ export function RequirePermission({
   }
   return <Outlet />;
 }
+
+const forbiddenStyle: React.CSSProperties = {
+  padding: '40px',
+  maxWidth: 480,
+  margin: '40px auto',
+  textAlign: 'center',
+  color: 'var(--tw-color-text-primary)',
+};
+
+const forbiddenTitleStyle: React.CSSProperties = {
+  fontSize: '1.25rem',
+  fontWeight: 500,
+  marginBottom: 8,
+};
+
+const forbiddenBodyStyle: React.CSSProperties = {
+  fontSize: '0.875rem',
+  color: 'var(--tw-color-text-muted)',
+  lineHeight: 1.6,
+};

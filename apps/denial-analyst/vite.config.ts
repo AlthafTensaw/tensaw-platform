@@ -14,6 +14,10 @@ import path from 'node:path';
  */
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
+  const allowedHosts = (env.VITE_DEV_ALLOWED_HOSTS ?? '')
+    .split(',')
+    .map((h) => h.trim())
+    .filter(Boolean);
 
   if (mode !== 'test') {
     const required = [
@@ -44,8 +48,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      port: 5176,
-      strictPort: false,
+      port: 5175,
+      strictPort: true,
+      allowedHosts,
     },
     build: {
       target: 'es2022',

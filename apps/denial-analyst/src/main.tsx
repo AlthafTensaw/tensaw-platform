@@ -6,7 +6,7 @@ import { ToastHost } from '@tensaw/wired-components';
 import '@tensaw/design-system/styles/global.css';
 
 import { AppThemeProvider } from './AppTheme';
-import { AppRoutes } from './routes';
+import { AppRouter } from './routes';
 import { bootstrap } from './bootstrap';
 
 /**
@@ -22,13 +22,12 @@ import { bootstrap } from './bootstrap';
  *   - <ToastHost> mounted for action-error toasts (RFC 7807 surfacing)
  *     and partial-success bulk-accept messaging (Q #11 resolution).
  *
- * bootstrap() fires-and-forgets: it registers actions and starts MSW in
- * dev. The router-level auth gate + page-query suspension give it enough
- * time to settle before any action dispatches.
+ * bootstrap() completes before first render so action registration and any
+ * service-worker setup/cleanup is done before page queries can run.
  */
-import { BrowserRouter } from 'react-router-dom';
+async function startApp(): Promise<void> {
+  await bootstrap();
 
-bootstrap().then(() => {
   const rootEl = document.getElementById('root');
   if (!rootEl) throw new Error('Root element #root not found');
 
@@ -36,12 +35,12 @@ bootstrap().then(() => {
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <AppThemeProvider>
-          <BrowserRouter>
-            <AppRoutes />
-            <ToastHost />
-          </BrowserRouter>
+          <AppRouter />
+          <ToastHost />
         </AppThemeProvider>
       </QueryClientProvider>
     </StrictMode>,
   );
-});
+}
+
+void startApp();

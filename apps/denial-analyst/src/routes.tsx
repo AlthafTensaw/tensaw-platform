@@ -10,33 +10,55 @@
  * Permission gating done by RequireAuth / RequirePermission outlets.
  */
 
-import { Navigate, Route, Routes } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+  type RouteObject,
+} from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import { RequireAuth, RequirePermission } from './auth/RequireAuth';
 import { SignInPage } from './pages/sign-in/SignInPage';
 import { WorklistRoute } from './pages/worklist/WorklistRoute';
 import { CostRoute } from './pages/cost/CostRoute';
 
-export function AppRoutes(): JSX.Element {
-  return (
-    <Routes>
-      <Route path="/sign-in" element={<SignInPage />} />
-      <Route element={<RequireAuth />}>
-        <Route element={<AppLayout />}>
-          <Route index element={<Navigate to="/worklist" replace />} />
-          <Route
-            element={<RequirePermission permission="denial.read" />}
-          >
-            <Route path="/worklist" element={<WorklistRoute />} />
-          </Route>
-          <Route
-            element={<RequirePermission permission="denial.view_cost" />}
-          >
-            <Route path="/cost" element={<CostRoute />} />
-          </Route>
-        </Route>
-      </Route>
-      <Route path="*" element={<Navigate to="/worklist" replace />} />
-    </Routes>
-  );
+export const routeTable: RouteObject[] = [
+  {
+    path: '/sign-in',
+    element: <SignInPage />,
+  },
+  {
+    element: <RequireAuth />,
+    children: [
+      {
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <Navigate to="/worklist" replace /> },
+          {
+            element: <RequirePermission permission="denial.read" />,
+            children: [
+              { path: 'worklist', element: <WorklistRoute /> },
+            ],
+          },
+          {
+            element: <RequirePermission permission="denial.view_cost" />,
+            children: [
+              { path: 'cost', element: <CostRoute /> },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: '*',
+    element: <Navigate to="/worklist" replace />,
+  },
+];
+
+const router = createBrowserRouter(routeTable);
+
+export function AppRouter(): JSX.Element {
+  return <RouterProvider router={router} />;
 }
+

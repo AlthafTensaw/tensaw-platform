@@ -1,10 +1,6 @@
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import { setupServer } from 'msw/node';
-import {
-  buildDenialHandlers,
-  resetMockDenialState,
-} from '@tensaw/mock-server';
+import '@testing-library/jest-dom/vitest';
 
 /**
  * Denial Tool — Vitest setup.
@@ -26,6 +22,11 @@ vi.stubEnv('VITE_BUILD_VERSION', '0.0.0-test');
 vi.stubEnv(
   'VITE_STRIPE_PUBLISHABLE_KEY',
   'pk_test_unused_runtime_validation_only',
+);
+
+const { setupServer } = await import('msw/node');
+const { buildDenialHandlers, resetMockDenialState } = await import(
+  '@tensaw/mock-server'
 );
 
 const server = setupServer(

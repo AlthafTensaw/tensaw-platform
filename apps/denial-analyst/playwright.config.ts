@@ -5,8 +5,8 @@
  * starts via bootstrap.ts so the network layer is mocked end-to-end.
  *
  * No CI integration yet; locally:
- *   pnpm --filter @tensaw/app-denial-tool dev           # in one terminal
- *   pnpm --filter @tensaw/app-denial-tool e2e           # in another
+ *   pnpm --filter @tensaw/app-denial-analyst dev           # in one terminal
+ *   pnpm --filter @tensaw/app-denial-analyst e2e           # in another
  */
 
 import { defineConfig, devices } from '@playwright/test';

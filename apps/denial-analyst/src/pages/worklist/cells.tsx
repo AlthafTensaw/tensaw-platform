@@ -8,7 +8,7 @@
  * PR-5 already wired.
  */
 
-import { Pill } from '@tensaw/design-system/feedback';
+import { Badge } from '@tensaw/design-system/feedback';
 import type {
   Confidence,
   PriorityChip as PriorityChipValue,
@@ -38,62 +38,63 @@ export function ConfidenceDot({ value }: { value: Confidence }) {
 
 // -- Priority chip — Pill with per-chip tone --------------------------------
 
-const PRIORITY_TONE: Record<PriorityChipValue, 'amber' | 'red' | 'purple' | 'coral'> = {
-  HIGH_DOLLAR: 'amber',
-  LOW_CONFIDENCE: 'amber',
-  DUP_INVESTIGATE: 'purple',
-  TF_WATCH: 'red',
-  OVERRIDE_PATTERN: 'coral',
-  DATA_ERROR: 'red',
+const PRIORITY_VARIANT: Record<PriorityChipValue, 'warning' | 'error' | 'neutral' | 'outline'> = {
+  HIGH_DOLLAR: 'warning',
+  LOW_CONFIDENCE: 'warning',
+  DUP_INVESTIGATE: 'neutral',
+  TF_WATCH: 'error',
+  OVERRIDE_PATTERN: 'outline',
+  DATA_ERROR: 'error',
 };
 
-function PriorityPill({ value }: { value: PriorityChipValue }) {
+function PriorityBadge({ value }: { value: PriorityChipValue }) {
   return (
-    <Pill
-      variant="subtle"
+    <Badge
+      variant={PRIORITY_VARIANT[value]}
+      size="sm"
       className="text-[10px] uppercase tracking-wide"
     >
       {value}
-    </Pill>
+    </Badge>
   );
 }
 
 // -- Aging chip — Pill, color depends on bucket -----------------------------
 
-function agingTone(bucket: string | null): 'green' | 'amber' | 'red' | 'gray' {
-  if (!bucket) return 'gray';
-  if (bucket.startsWith('0-') || bucket.startsWith('30-')) return 'green';
-  if (bucket.startsWith('60-') || bucket.startsWith('90-')) return 'amber';
-  return 'red'; // 120+, 180+
+function agingVariant(bucket: string | null): 'success' | 'warning' | 'error' | 'neutral' {
+  if (!bucket) return 'neutral';
+  if (bucket.startsWith('0-') || bucket.startsWith('30-')) return 'success';
+  if (bucket.startsWith('60-') || bucket.startsWith('90-')) return 'warning';
+  return 'error'; // 120+, 180+
 }
 
 export function AgingCell({ row }: { row: WorklistRow }) {
   const bucket = row.claim.aging_bucket;
   return (
-    <Pill variant="subtle">
+    <Badge variant={agingVariant(bucket)} size="sm">
       {bucket ?? '—'}
-    </Pill>
+    </Badge>
   );
 }
 
 // -- Current status badge (D-13) --------------------------------------------
 
-function currentStatusTone(
+function currentStatusVariant(
   label: string | null,
-): 'green' | 'blue' | 'amber' | 'gray' {
-  if (!label || label === 'Denied') return 'gray';
-  if (label === 'Paid' || label === 'Filed') return 'green';
-  if (label === 'Clari Opened') return 'amber';
-  return 'blue';
+): 'success' | 'info' | 'warning' | 'neutral' {
+  if (!label || label === 'Denied') return 'neutral';
+  if (label === 'Paid' || label === 'Filed') return 'success';
+  if (label === 'Clari Opened') return 'warning';
+  return 'info';
 }
 
 export function CurrentStatusCell({ row }: { row: WorklistRow }) {
   const label = row.claim.current_status_label;
   if (!label || label === 'Denied') return null; // collapse the noise — Denied is implicit
   return (
-    <Pill variant="subtle">
+    <Badge variant={currentStatusVariant(label)} size="sm">
       {label}
-    </Pill>
+    </Badge>
   );
 }
 
@@ -105,9 +106,9 @@ export function ClaimPatientCell({ row }: { row: WorklistRow }) {
       <div className="font-medium text-sm">
         {row.claim.claim_id}
         {' · '}
-        <span className="  tracking-wider">•••••••••</span>
+        <span className="text-muted-foreground tracking-wider">•••••••••</span>
       </div>
-      <div className="text-xs   mt-0.5">
+      <div className="text-xs text-muted-foreground mt-0.5">
         {row.claim.primary_payer_name ?? '—'} · {row.claim.aging_bucket ?? '—'}
       </div>
     </div>
@@ -127,7 +128,7 @@ export function CategoryCell({ row }: { row: WorklistRow }) {
       {c.priority_chips.length > 0 ? (
         <div className="mt-1 flex gap-1 flex-wrap">
           {c.priority_chips.map((chip) => (
-            <PriorityPill key={chip} value={chip} />
+            <PriorityBadge key={chip} value={chip} />
           ))}
         </div>
       ) : null}
@@ -137,21 +138,22 @@ export function CategoryCell({ row }: { row: WorklistRow }) {
 
 // -- State pill -------------------------------------------------------------
 
-const STATE_TONE = {
+const STATE_VARIANT = {
   recommended: 'info',
-  accepted: 'teal',
-  overridden: 'amber',
-  completed: 'gray',
+  accepted: 'success',
+  overridden: 'warning',
+  completed: 'neutral',
 } as const;
 
 export function StateCell({ row }: { row: WorklistRow }) {
   const state = row.classification.state;
   return (
-    <Pill
-      variant="subtle"
+    <Badge
+      variant={STATE_VARIANT[state]}
+      size="sm"
     >
       {state.charAt(0).toUpperCase() + state.slice(1)}
-    </Pill>
+    </Badge>
   );
 }
 
@@ -164,7 +166,7 @@ export function NextActionCell({ row }: { row: WorklistRow }) {
 
   if (steps.length === 0) {
     return (
-      <span className="  italic text-xs">
+      <span className="text-muted-foreground italic text-xs">
         No action steps defined yet
       </span>
     );
@@ -176,12 +178,14 @@ export function NextActionCell({ row }: { row: WorklistRow }) {
       </span>
     );
   }
-  const next = firstIncomplete!;
+  if (!firstIncomplete) {
+    return null;
+  }
   return (
     <div className="text-xs">
-      <div className="font-medium">{next.action}</div>
-      <div className="  mt-0.5">
-        {next.owner} · {next.sla_days} day SLA
+      <div className="font-medium">{firstIncomplete.action}</div>
+      <div className="text-muted-foreground mt-0.5">
+        {firstIncomplete.owner} · {firstIncomplete.sla_days} day SLA
       </div>
     </div>
   );
@@ -191,8 +195,10 @@ export function NextActionCell({ row }: { row: WorklistRow }) {
 
 export function NetPendingCell({ row }: { row: WorklistRow }) {
   const value = row.claim.net_pending;
-  const [intPart, decPart = '00'] = value.split('.');
-  const grouped = intPart!.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const parts = value.split('.');
+  const intPart = parts[0] || '';
+  const decPart = parts[1] || '00';
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return (
     <span className="tabular-nums font-medium">
       ${grouped}.{decPart.padEnd(2, '0').slice(0, 2)}

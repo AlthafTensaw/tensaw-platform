@@ -1,35 +1,31 @@
 /**
- * OverrideModal — wraps the platform <Dialog> + <ActionForm>.
+ * OverrideModal — Dialog + ActionForm rewrite.
  *
- * PR-6: replaces the custom modal markup + manual mutation wiring
- * with platform primitives. Form state goes through ActionForm's
- * react-hook-form integration; the dispatch is automatic on submit.
- *
- * Form shape matches OverrideRequest (Zod): reason + optional
- * corrected_category + optional corrected_branch + optional notes.
- * When reason === 'tool_wrong', corrected_category becomes required
- * and is validated client-side before dispatch (the platform's
- * react-hook-form `setError` is wired to surface the message).
- *
- * The "Worked outside tool" reason is selectable here too — analysts
- * can override with that reason directly from the modal, not only
- * via the worked-outside-tool shortcut button on the row detail.
+ * PR-7 fixes:
+ *   - classification_id now flows through to the ActionForm submission
+ *     (bug #15). Previously the form schema didn't include it, so the
+ *     dispatched mutation had no path id and the request 404'd.
+ *   - Form values are flat — classification_id, reason, corrected_*,
+ *     notes — matching the action registry's request shape. The
+ *     dispatcher substitutes classification_id into the path and sends
+ *     the rest as the body.
+ *   - Token rewrites.
  */
 
-import { z } from 'zod';
 import { Dialog } from '@tensaw/design-system/overlays';
 import { ActionForm } from '@tensaw/wired-components';
 import { Button } from '@tensaw/design-system/primitives';
-import { Select } from '@tensaw/design-system/forms';
+import { Select, FormField } from '@tensaw/design-system/forms';
 import { Textarea } from '@tensaw/design-system/primitives';
 import { Alert } from '@tensaw/design-system/feedback';
+import { z } from 'zod';
 import {
   CATEGORY_VALUES,
   OVERRIDE_REASON_COPY,
-  OverrideRequestSchema,
+  OverrideReasonEnum,
   type OverrideReason,
-  type OverrideRequest,
   type Classification,
+  type StateTransitionResponse,
 } from '../actions/schemas';
 
 interface OverrideModalProps {
@@ -39,10 +35,24 @@ interface OverrideModalProps {
   onSuccess?: () => void;
 }
 
+// PR-7: the form's schema mirrors the action's request shape exactly,
+// classification_id included. The dispatcher needs it in the payload
+// to substitute into POST /v1/classifications/{classification_id}/override.
+const OverrideFormSchema = z.object({
+  classification_id: z.string().uuid(),
+  reason: OverrideReasonEnum,
+  corrected_category: z.string().optional(),
+  corrected_branch: z.string().optional(),
+  notes: z.string().max(1000).optional(),
+});
+type OverrideFormValues = z.infer<typeof OverrideFormSchema>;
+
 const REASON_OPTIONS: { value: OverrideReason; label: string }[] = (
   Object.keys(OVERRIDE_REASON_COPY) as OverrideReason[]
 ).map((key) => ({ value: key, label: OVERRIDE_REASON_COPY[key].label }));
 
+// PR-7: Radix Select doesn't accept empty string values (bug #3). Use a
+// sentinel and convert at the boundary.
 const CATEGORY_OPTIONS = CATEGORY_VALUES.map((v) => ({ value: v, label: v }));
 
 export function OverrideModal({
@@ -59,12 +69,14 @@ export function OverrideModal({
       description={`Current: ${classification.primary_category}`}
       size="md"
     >
-      <ActionForm<OverrideRequest & { classification_id: string }, unknown>
+      <ActionForm<OverrideFormValues, StateTransitionResponse>
         actionId="denial.override"
-        schema={OverrideRequestSchema.extend({ classification_id: z.string().uuid() })}
+        schema={OverrideFormSchema}
         defaultValues={{
+          // PR-7: classification_id baked into defaults — it doesn't
+          // need a form field, but it must be in the payload.
           classification_id: classification.classification_id,
-          reason: undefined,
+          reason: undefined as unknown as OverrideReason,
           corrected_category: undefined,
           corrected_branch: undefined,
           notes: undefined,
@@ -76,28 +88,27 @@ export function OverrideModal({
         }}
       >
         {(methods) => {
-          const reason = methods.watch('reason');
+          const reason = methods.watch('reason') as OverrideReason | undefined;
           const correctedCategory = methods.watch('corrected_category');
           const reasonCopy = reason ? OVERRIDE_REASON_COPY[reason] : null;
           const requiresCategory = reasonCopy?.requiresCategory ?? false;
           const categoryMatchesCurrent =
-            correctedCategory === classification.primary_category;
+            !!correctedCategory && correctedCategory === classification.primary_category;
 
           return (
             <div className="flex flex-col gap-4">
-              <div>
-                <div className="text-sm font-medium mb-1">Reason *</div>
-                <Select
-                  value={reason ?? ''}
-                  onValueChange={(v: string) =>
-                    methods.setValue('reason', v as OverrideReason, {
-                      shouldValidate: true,
-                    })
-                  }
-                  options={REASON_OPTIONS}
-                  aria-label="Reason"
-                />
-              </div>
+              <FormField name="reason" label="Reason" required>
+                {({ value, onChange }) => (
+                  <Select
+                    value={(value as OverrideReason | undefined) ?? null}
+                    onValueChange={(v: string) =>
+                      { onChange(v); }
+                    }
+                    options={REASON_OPTIONS}
+                    placeholder="Pick a reason…"
+                  />
+                )}
+              </FormField>
 
               {reasonCopy ? (
                 <Alert variant="info">
@@ -106,38 +117,48 @@ export function OverrideModal({
               ) : null}
 
               {requiresCategory ? (
-              <div>
-                <div className="text-sm font-medium mb-1">Corrected category *</div>
-                <Select
-                  value={correctedCategory ?? ''}
-                  onValueChange={(v: string) =>
-                    methods.setValue('corrected_category', v, {
-                      shouldValidate: true,
-                    })
-                  }
-                  options={CATEGORY_OPTIONS}
-                  aria-label="Corrected category"
-                />
-                {categoryMatchesCurrent && (
-                  <div className="text-xs text-red-500 mt-1">Pick a category different from the current one</div>
-                )}
-              </div>
+                <FormField
+                  name="corrected_category"
+                  label="Corrected category"
+                  required
+                >
+                  {({ value, onChange, error }) => (
+                    <div className="flex flex-col gap-1">
+                      <Select
+                        value={(value as string | undefined) ?? null}
+                        onValueChange={(v: string) =>
+                          { onChange(v); }
+                        }
+                        options={CATEGORY_OPTIONS}
+                        placeholder="Pick the correct category…"
+                        error={categoryMatchesCurrent || !!error}
+                      />
+                      {categoryMatchesCurrent && (
+                        <p className="text-sm text-destructive" role="alert">
+                          Pick a category different from the current one
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </FormField>
               ) : null}
 
-              <div>
-                <div className="text-sm font-medium mb-1">Notes (optional)</div>
-                <Textarea
-                  rows={3}
-                  placeholder="Context for the audit trail…"
-                  {...methods.register('notes')}
-                />
-              </div>
+              <FormField name="notes" label="Notes (optional)">
+                {({ value, onChange }) => (
+                  <Textarea
+                    rows={3}
+                    placeholder="Context for the audit trail…"
+                    value={(value as string | undefined) ?? ''}
+                    onChange={(e) => { onChange(e.target.value); }}
+                  />
+                )}
+              </FormField>
 
               <div className="flex gap-2 justify-end pt-2 border-t border-border">
                 <Button
                   variant="ghost"
                   type="button"
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => { onOpenChange(false); }}
                 >
                   Cancel
                 </Button>

@@ -53,7 +53,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
 export function resolvePermissions(roles: readonly Role[]): Permission[] {
   const set = new Set<Permission>();
   for (const role of roles) {
-    for (const perm of ROLE_PERMISSIONS[role] ?? []) set.add(perm);
+    for (const perm of ROLE_PERMISSIONS[role]) set.add(perm);
   }
   return Array.from(set);
 }
@@ -91,11 +91,8 @@ export function extractClinicIds(
 import { useAuthStore } from '@tensaw/runtime';
 
 export function usePermissions() {
-  const user = useAuthStore((s) => s.user);
-  const permissions = new Set(user?.permissions ?? []);
-
-  return {
-    has: (perm: Permission) => permissions.has(perm),
-    hasAny: (perms: Permission[]) => perms.some((p) => permissions.has(p)),
-  };
+  const userPermissions = useAuthStore((s) => s.user?.permissions ?? []) as Permission[];
+  const has = (permission: Permission) => userPermissions.includes(permission);
+  return { has };
 }
+

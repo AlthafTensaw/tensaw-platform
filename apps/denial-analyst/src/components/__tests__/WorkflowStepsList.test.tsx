@@ -20,12 +20,15 @@ const mutateAsync = vi.fn();
 const useAuthStoreMock = vi.fn();
 
 vi.mock('@tensaw/runtime', () => ({
-  useActionMutation: () => ({
-    mutateAsync,
-    isPending: false,
-  }),
   useAuthStore: (selector: (s: unknown) => unknown) =>
     selector(useAuthStoreMock()),
+}));
+
+vi.mock('@tensaw/actions', () => ({
+  useActionMutation: () => [
+    mutateAsync,
+    { isLoading: false, data: undefined, error: null, reset: vi.fn() },
+  ],
 }));
 
 // Stub the problem-details helper so we don't need the full module shape
@@ -83,8 +86,8 @@ const STEPS_ALL_DONE: WorkflowStep[] = STEPS.map((s, i) => ({
 
 const CLASSIFICATION_ID = 'ffffffff-1111-4222-8333-444444444444';
 
-const userWithAct = { permissions: ['denial.read', 'denial.act'] };
-const userReadOnly = { permissions: ['denial.read'] };
+const userWithAct = { user: { permissions: ['denial.read', 'denial.act'] } };
+const userReadOnly = { user: { permissions: ['denial.read'] } };
 
 beforeEach(() => {
   mutateAsync.mockReset();
@@ -128,9 +131,12 @@ describe('WorkflowStepsList — sequential completion', () => {
 
   it('clicking the next-incomplete step dispatches step-complete with the right payload', async () => {
     mutateAsync.mockResolvedValue({
-      next_step_number: 2,
-      all_steps_completed: false,
-      auto_completed_classification: false,
+      ok: true,
+      data: {
+        next_step_number: 2,
+        all_steps_completed: false,
+        auto_completed_classification: false,
+      },
     });
     const onCompleted = vi.fn();
     render(
@@ -142,7 +148,7 @@ describe('WorkflowStepsList — sequential completion', () => {
       />,
     );
     fireEvent.click(screen.getAllByRole('checkbox')[0]!);
-    await waitFor(() => expect(mutateAsync).toHaveBeenCalledTimes(1));
+    await waitFor(() => { expect(mutateAsync).toHaveBeenCalledTimes(1); });
     expect(mutateAsync).toHaveBeenCalledWith({
       classification_id: CLASSIFICATION_ID,
       step_number: 1,
@@ -154,9 +160,12 @@ describe('WorkflowStepsList — sequential completion', () => {
 describe('WorkflowStepsList — auto-complete signal', () => {
   it('fires onAutoComplete when response carries auto_completed_classification: true', async () => {
     mutateAsync.mockResolvedValue({
-      next_step_number: null,
-      all_steps_completed: true,
-      auto_completed_classification: true,
+      ok: true,
+      data: {
+        next_step_number: null,
+        all_steps_completed: true,
+        auto_completed_classification: true,
+      },
     });
     const onAutoComplete = vi.fn();
     render(
@@ -169,14 +178,17 @@ describe('WorkflowStepsList — auto-complete signal', () => {
       />,
     );
     fireEvent.click(screen.getAllByRole('checkbox')[0]!);
-    await waitFor(() => expect(onAutoComplete).toHaveBeenCalledTimes(1));
+    await waitFor(() => { expect(onAutoComplete).toHaveBeenCalledTimes(1); });
   });
 
   it('does NOT fire onAutoComplete when flag is false', async () => {
     mutateAsync.mockResolvedValue({
-      next_step_number: 2,
-      all_steps_completed: false,
-      auto_completed_classification: false,
+      ok: true,
+      data: {
+        next_step_number: 2,
+        all_steps_completed: false,
+        auto_completed_classification: false,
+      },
     });
     const onAutoComplete = vi.fn();
     render(
@@ -189,7 +201,7 @@ describe('WorkflowStepsList — auto-complete signal', () => {
       />,
     );
     fireEvent.click(screen.getAllByRole('checkbox')[0]!);
-    await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+    await waitFor(() => { expect(mutateAsync).toHaveBeenCalled(); });
     expect(onAutoComplete).not.toHaveBeenCalled();
   });
 });

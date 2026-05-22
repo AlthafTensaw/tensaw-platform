@@ -52,8 +52,18 @@ function loadFilters(userId: string | undefined): WorklistFilters {
   try {
     const raw = window.localStorage.getItem(storageKeyFor(userId));
     if (!raw) return DEFAULT_FILTERS;
-    const parsed = JSON.parse(raw);
-    return { ...DEFAULT_FILTERS, ...parsed };
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    return {
+      state: (parsed.state as ClassificationState | undefined) ?? DEFAULT_FILTERS.state,
+      primary_category: parsed.primary_category as string | undefined,
+      recommended_owner: parsed.recommended_owner as string | undefined,
+      payer_name: parsed.payer_name as string | undefined,
+      age_bucket: parsed.age_bucket as string | undefined,
+      requires_human_review: parsed.requires_human_review as boolean | undefined,
+      priority_chip: parsed.priority_chip as PriorityChip | undefined,
+      classification_source: parsed.classification_source as ClassificationSource | undefined,
+      min_amount_cents: parsed.min_amount_cents as number | undefined,
+    };
   } catch {
     return DEFAULT_FILTERS;
   }
@@ -76,42 +86,31 @@ function saveFilters(
 
 export interface UseWorklistFiltersResult {
   filters: WorklistFilters;
-  setFilters: (filters: WorklistFilters) => void;
   setFilter: <K extends keyof WorklistFilters>(
     key: K,
     value: WorklistFilters[K],
   ) => void;
+  setFilters: (filters: WorklistFilters) => void;
   clearAll: () => void;
   activeCount: number;
-  page: number;
-  setPage: (page: number) => void;
 }
 
 export function useWorklistFilters(): UseWorklistFiltersResult {
   const userId = useAuthStore((s) => s.user?.userId);
-  const [filters, setFiltersLocal] = useState<WorklistFilters>(() =>
+  const [filters, setFilters] = useState<WorklistFilters>(() =>
     loadFilters(userId),
   );
-  const [page, setPage] = useState<number>(1);
 
   useEffect(() => {
-    setFiltersLocal(loadFilters(userId));
+    setFilters(loadFilters(userId));
   }, [userId]);
-
-  const setFilters = useCallback(
-    (nextFilters: WorklistFilters) => {
-      setFiltersLocal(nextFilters);
-      saveFilters(userId, nextFilters);
-    },
-    [userId],
-  );
 
   const setFilter = useCallback(
     <K extends keyof WorklistFilters>(
       key: K,
       value: WorklistFilters[K],
     ) => {
-      setFiltersLocal((prev) => {
+      setFilters((prev) => {
         const next: WorklistFilters = { ...prev, [key]: value };
         saveFilters(userId, next);
         return next;
@@ -120,21 +119,27 @@ export function useWorklistFilters(): UseWorklistFiltersResult {
     [userId],
   );
 
+  const updateFilters = useCallback(
+    (next: WorklistFilters) => {
+      setFilters(next);
+      saveFilters(userId, next);
+    },
+    [userId],
+  );
+
   const clearAll = useCallback(() => {
-    setFiltersLocal(DEFAULT_FILTERS);
+    setFilters(DEFAULT_FILTERS);
     saveFilters(userId, DEFAULT_FILTERS);
   }, [userId]);
 
   const activeCount = countActiveFilters(filters);
 
-  return { filters, setFilters, setFilter, clearAll, activeCount, page, setPage };
+  return { filters, setFilter, setFilters: updateFilters, clearAll, activeCount };
 }
 
 function countActiveFilters(filters: WorklistFilters): number {
   let count = 0;
-  for (const key of Object.keys(DEFAULT_FILTERS) as Array<
-    keyof WorklistFilters
-  >) {
+  for (const key of Object.keys(DEFAULT_FILTERS) as (keyof WorklistFilters)[]) {
     if (filters[key] !== DEFAULT_FILTERS[key]) count += 1;
   }
   return count;

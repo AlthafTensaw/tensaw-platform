@@ -17,8 +17,10 @@ import { BulkActionBar } from '@tensaw/worklist';
 import { Button } from '@tensaw/design-system/primitives';
 import { Tooltip } from '@tensaw/design-system/overlays';
 import { ActionButton } from '@tensaw/wired-components';
+import { useNotificationsStore } from '@tensaw/runtime';
 import type { BulkAcceptResponse, WorklistRow } from '../actions/schemas';
 import { evaluateD19Gate } from './d19Gate';
+import { exportSelectedRowsToCSV } from '../lib/csvExport';
 
 interface DenialBulkActionBarProps {
   selectedRows: WorklistRow[];
@@ -33,6 +35,7 @@ export function DenialBulkActionBar({
 }: DenialBulkActionBarProps) {
   const gate = evaluateD19Gate(selectedRows);
   const ids = selectedRows.map((r) => r.classification.classification_id);
+  const pushToast = useNotificationsStore((s) => s.pushToast);
 
   return (
     <BulkActionBar
@@ -48,8 +51,13 @@ export function DenialBulkActionBar({
           actionId="denial.bulk-accept"
           request={{ body: { classification_ids: ids } }}
           variant="primary"
-          toastOnSuccess="Accepted bulk classification"
-          onSuccess={() => {
+          toastOnSuccess={false}
+          onSuccess={(resp) => {
+            pushToast({
+              toastId: `bulk-accept-${Date.now()}`,
+              severity: 'success',
+              title: `Accepted ${resp.accepted.length} of ${resp.requested}`,
+            });
             onClear();
             onMutated();
           }}
@@ -57,20 +65,21 @@ export function DenialBulkActionBar({
           Accept all ({selectedRows.length})
         </ActionButton>
       ) : (
-        <Tooltip
-          content={
-            gate.classificationId
-              ? `Classification ${gate.classificationId}: ${gate.reason}`
-              : gate.reason
-          }
-        >
+        <Tooltip content={gate.reason}>
           <Button variant="primary" disabled>
             Accept all ({selectedRows.length})
           </Button>
         </Tooltip>
       )}
 
-
+      <Button
+        variant="ghost"
+        onClick={() =>
+          { exportSelectedRowsToCSV(selectedRows, { user: undefined }); }
+        }
+      >
+        Export CSV
+      </Button>
     </BulkActionBar>
   );
 }

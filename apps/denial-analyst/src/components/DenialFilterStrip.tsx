@@ -1,18 +1,18 @@
 /**
  * DenialFilterStrip — denial-tool filter row.
  *
- * PR-6: composes the platform <FilterStrip> from @tensaw/worklist
- * with denial-specific filter chips. Each chip wraps a small Select
- * from @tensaw/design-system/forms (single-select; the backend's
- * worklist filters take scalar params, not arrays).
- *
- * The local-storage persistence + URL-state hydration sit one layer
- * up in useWorklistFilters. This component is purely presentational.
+ * PR-7 fixes:
+ *   - Radix Select forbids value="" — use sentinel "__any__" for the
+ *     "no filter" option, convert to undefined at the action-dispatch
+ *     boundary (bug #3).
+ *   - Token rewrites — text-muted-foreground, text-foreground.
+ *   - 'aria-label' attribute spelling (platform expects the kebab form).
  */
 
 import { FilterStrip } from '@tensaw/worklist';
 import { Select } from '@tensaw/design-system/forms';
 import { Pill } from '@tensaw/design-system/feedback';
+import { Icon } from '@tensaw/design-system/primitives';
 import {
   CATEGORY_VALUES,
   PriorityChipEnum,
@@ -26,21 +26,23 @@ interface DenialFilterStripProps {
   onChange: (next: WorklistFilters) => void;
 }
 
+const ANY = '__any__'; // Radix-safe sentinel for "no filter selected"
+
 const STATE_OPTIONS = ClassificationStateEnum.options.map((v) => ({
   value: v,
   label: v.charAt(0).toUpperCase() + v.slice(1),
 }));
 
-const CATEGORY_OPTIONS = [{ value: '_all_', label: 'Any category' }].concat(
+const CATEGORY_OPTIONS = [{ value: ANY, label: 'Any category' }].concat(
   CATEGORY_VALUES.map((v) => ({ value: v, label: v })),
 );
 
-const PRIORITY_OPTIONS = [{ value: '_all_', label: 'Any priority' }].concat(
+const PRIORITY_OPTIONS = [{ value: ANY, label: 'Any priority' }].concat(
   PriorityChipEnum.options.map((v) => ({ value: v, label: v })),
 );
 
 const AGING_OPTIONS = [
-  { value: '_all_', label: 'Any aging' },
+  { value: ANY, label: 'Any aging' },
   { value: '0-29 day', label: '0–29 days' },
   { value: '30-59 day', label: '30–59 days' },
   { value: '60-89 day', label: '60–89 days' },
@@ -49,95 +51,98 @@ const AGING_OPTIONS = [
   { value: '180+ day', label: '180+ days' },
 ];
 
-const PAYER_OPTIONS = [{ value: '_all_', label: 'Any payer' }].concat(
+const PAYER_OPTIONS = [{ value: ANY, label: 'Any payer' }].concat(
   WORKLIST_FIXTURE_META.payers.map((p: string) => ({ value: p, label: p })),
 );
 
-const OWNER_OPTIONS = [{ value: '_all_', label: 'Any owner' }].concat(
+const OWNER_OPTIONS = [{ value: ANY, label: 'Any owner' }].concat(
   WORKLIST_FIXTURE_META.recommended_owners.map((o: string) => ({ value: o, label: o })),
 );
+
+/** Convert sentinel back to undefined at the action-call boundary. */
+const fromSentinel = (v: string): string | undefined =>
+  v === ANY ? undefined : v;
 
 export function DenialFilterStrip({
   filters,
   onChange,
 }: DenialFilterStripProps) {
   const update = (patch: Partial<WorklistFilters>) =>
-    onChange({ ...filters, ...patch });
+    { onChange({ ...filters, ...patch }); };
 
   return (
     <FilterStrip>
       <Select
+        size="sm"
         value={filters.state ?? 'recommended'}
         onValueChange={(v: string) =>
-          update({ state: v as WorklistFilters['state'] })
+          { update({ state: v as WorklistFilters['state'] }); }
         }
         options={STATE_OPTIONS}
         aria-label="State"
-        className="w-44 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
       <Select
-        value={filters.primary_category ?? '_all_'}
+        size="sm"
+        value={filters.primary_category ?? ANY}
         onValueChange={(v: string) =>
-          update({ primary_category: v === '_all_' ? undefined : v })
+          { update({ primary_category: fromSentinel(v) }); }
         }
         options={CATEGORY_OPTIONS}
         aria-label="Category"
-        className="w-56 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
       <Select
-        value={filters.payer_name ?? '_all_'}
-        onValueChange={(v: string) => update({ payer_name: v === '_all_' ? undefined : v })}
+        size="sm"
+        value={filters.payer_name ?? ANY}
+        onValueChange={(v: string) => { update({ payer_name: fromSentinel(v) }); }}
         options={PAYER_OPTIONS}
         aria-label="Payer"
-        className="w-44 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
       <Select
-        value={filters.recommended_owner ?? '_all_'}
+        size="sm"
+        value={filters.recommended_owner ?? ANY}
         onValueChange={(v: string) =>
-          update({ recommended_owner: v === '_all_' ? undefined : v })
+          { update({ recommended_owner: fromSentinel(v) }); }
         }
         options={OWNER_OPTIONS}
         aria-label="Owner"
-        className="w-44 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
       <Select
-        value={filters.age_bucket ?? '_all_'}
-        onValueChange={(v: string) => update({ age_bucket: v === '_all_' ? undefined : v })}
+        size="sm"
+        value={filters.age_bucket ?? ANY}
+        onValueChange={(v: string) => { update({ age_bucket: fromSentinel(v) }); }}
         options={AGING_OPTIONS}
         aria-label="Aging"
-        className="w-40 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
       <Select
-        value={filters.priority_chip ?? '_all_'}
+        size="sm"
+        value={filters.priority_chip ?? ANY}
         onValueChange={(v: string) =>
-          update({
-            priority_chip: (v === '_all_' ? undefined : v) as WorklistFilters['priority_chip'],
-          })
+          { update({
+            priority_chip: fromSentinel(
+              v,
+            ) as WorklistFilters['priority_chip'],
+          }); }
         }
         options={PRIORITY_OPTIONS}
         aria-label="Priority"
-        className="w-44 bg-transparent border-transparent shadow-none hover:bg-muted/50"
       />
 
       {filters.requires_human_review ? (
         <Pill
           variant="subtle"
           removable
-          onRemove={() =>
-            update({ requires_human_review: undefined })
-          }
+          onRemove={() => { update({ requires_human_review: undefined }); }}
         >
           Review only
         </Pill>
       ) : (
         <button
           type="button"
-          className="text-xs text-muted-foreground hover:text-foreground px-2"
-          onClick={() =>
-            update({ requires_human_review: true })
-          }
+          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+          onClick={() => { update({ requires_human_review: true }); }}
         >
-          + Review only
+          <Icon name="Plus" size="xs" />
+          Review only
         </button>
       )}
     </FilterStrip>

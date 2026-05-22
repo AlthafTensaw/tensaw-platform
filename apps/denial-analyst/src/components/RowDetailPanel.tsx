@@ -1,32 +1,23 @@
 /**
  * RowDetailPanel — orchestrates claim header + 3 regions + action bar.
  *
- * PR-6 changes from PR-5:
- *   - ActionButton from @tensaw/wired-components for the mutation
- *     buttons (Accept, Complete, Re-classify, worked-outside-tool).
- *     The ActionButton automatically wires loading state, optimistic
- *     UI policy, error/success toast routing per the action's
- *     declaration. No more manual useActionMutation in this file.
- *   - Override is still a regular Button because it opens the modal
- *     (which then ActionForm-dispatches the override). Two-step UX.
- *   - Tailwind classes throughout. No inline styles.
- *   - ClaimDetail + DenialEvent fetching unchanged (still useActionQuery
- *     because reads through the data router for caching).
- *
- * State-aware action bar:
- *   recommended           → Accept · Override · Re-classify · worked-outside-tool*
- *   accepted | overridden → Complete · Re-classify
- *   completed             → (no action bar; shows "Completed N ago")
- *
- * *worked-outside-tool only shows when current_status_label != 'Denied'
- * per D-13.
+ * PR-7 fixes:
+ *   - Snake_case all dispatcher requests: { claim_id }, { classification_id }
+ *     to match the action registry's path-param substitution (bugs #11 + #14).
+ *   - useMemo on the two query request objects to keep React Query keys
+ *     stable across renders (bug #6 — infinite fetch loop).
+ *   - ActionButton requests now carry classification_id at the top level so
+ *     the dispatcher's path-substitution finds it (bug #14).
+ *   - Token rewrites: bg-card → bg-card on the claim header / action bar
+ *     (bug #12), text-muted-foreground → text-muted-foreground throughout (bug #9),
+ *     border-border → border-border, bg-muted/50 → bg-muted/50.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useActionQuery } from '@tensaw/actions';
 import { Button } from '@tensaw/design-system/primitives';
 import { ActionButton } from '@tensaw/wired-components';
-import { Pill } from '@tensaw/design-system/feedback';
+import { Badge } from '@tensaw/design-system/feedback';
 import { usePermissions } from '../auth/permissions';
 import type {
   ClaimDetail,
@@ -52,20 +43,37 @@ export function RowDetailPanel({ row, onMutated }: RowDetailPanelProps) {
 
   const { classification, claim } = row;
   const classificationId = classification.classification_id;
+  const claimId = claim.claim_id;
   const state = classification.state;
 
-  // Phase 1.5 — fat claim detail + denial events fetched on expand
-  const { data: claimDetail, isLoading: detailLoading } = useActionQuery<ClaimDetail>('denial.claim-detail', { claim_id: claim.claim_id });
+  // PR-7: useMemo on request objects so React Query keys are stable.
+  // Without this, the inline object literal makes RQ think the key
+  // changed on every render → infinite refetch (bug #6).
+  const claimDetailRequest = useMemo(
+    () => ({ claim_id: claimId }),
+    [claimId],
+  );
+  const denialEventsRequest = useMemo(
+    () => ({ claim_id: claimId }),
+    [claimId],
+  );
 
-  const { data: eventsData, isLoading: eventsLoading } = useActionQuery<DenialEvent[]>('denial.denial-events', { claim_id: claim.claim_id });
+  const { data: claimDetail, isLoading: detailLoading } = useActionQuery<ClaimDetail>(
+    'denial.claim-detail',
+    claimDetailRequest
+  );
+
+  const { data: eventsData, isLoading: eventsLoading } = useActionQuery<DenialEvent[]>(
+    'denial.denial-events',
+    denialEventsRequest
+  );
 
   const isWorkedOutsideTool =
     claim.current_status_label !== null &&
     claim.current_status_label !== 'Denied';
-    console.log("detail: ", claimDetail)
 
   return (
-    <div className="bg-muted/10">
+    <div className="bg-muted/50">
       <ClaimDetailHeader
         detail={claimDetail}
         loading={detailLoading}
@@ -78,20 +86,20 @@ export function RowDetailPanel({ row, onMutated }: RowDetailPanelProps) {
           <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium mb-2">
             Classification reasoning
           </div>
-          <div className="text-sm leading-relaxed mb-2">
+          <div className="text-sm leading-relaxed mb-2 text-foreground">
             {classification.reasoning_summary}
           </div>
           <div className="flex gap-2 items-center text-xs text-muted-foreground">
             {classification.rule_id ? (
-              <Pill variant="subtle">
+              <Badge variant="info" size="sm">
                 <code className="font-mono text-xs">
                   {classification.rule_id}
                 </code>
-              </Pill>
+              </Badge>
             ) : (
-              <Pill variant="subtle">
+              <Badge variant="neutral" size="sm">
                 LLM-classified
-              </Pill>
+              </Badge>
             )}
             <span className="flex items-center gap-1">
               <span
@@ -123,20 +131,23 @@ export function RowDetailPanel({ row, onMutated }: RowDetailPanelProps) {
         <WorkflowStepsList
           classification={classification}
           canAct={canAct}
-          onStepCompleted={() => onMutated()}
-          onAutoComplete={() => onMutated()}
+          onStepCompleted={() => { onMutated(); }}
+          onAutoComplete={() => { onMutated(); }}
         />
       </div>
 
-      {/* State-aware action bar */}
-      <div className="px-4 py-3 bg-muted/40 border-t border-border flex gap-2 items-center">
+      {/* State-aware action bar — bg-card, not bg-card */}
+      <div className="px-4 py-3 bg-card flex gap-2 items-center">
         {state === 'recommended' && canAct ? (
           isWorkedOutsideTool ? (
-            <ActionButton<{ classification_id: string; body: { reason: string } }, StateTransitionResponse>
+            <ActionButton<
+              { classification_id: string; reason: string },
+              StateTransitionResponse
+            >
               actionId="denial.override"
               request={{
                 classification_id: classificationId,
-                body: { reason: 'worked_outside_tool' },
+                reason: 'worked_outside_tool',
               }}
               variant="primary"
               toastOnSuccess="Recorded as worked outside tool"
@@ -145,9 +156,9 @@ export function RowDetailPanel({ row, onMutated }: RowDetailPanelProps) {
               Mark as worked outside tool
             </ActionButton>
           ) : (
-            <ActionButton<{ classification_id: string; body: object }, StateTransitionResponse>
+            <ActionButton<{ classification_id: string }, StateTransitionResponse>
               actionId="denial.accept"
-              request={{ classification_id: classificationId, body: {} }}
+              request={{ classification_id: classificationId }}
               variant="primary"
               toastOnSuccess="Accepted"
               onSuccess={onMutated}
@@ -158,18 +169,15 @@ export function RowDetailPanel({ row, onMutated }: RowDetailPanelProps) {
         ) : null}
 
         {state === 'recommended' && canAct ? (
-          <Button
-            variant="ghost"
-            onClick={() => setOverrideOpen(true)}
-          >
+          <Button variant="ghost" onClick={() => { setOverrideOpen(true); }}>
             Override…
           </Button>
         ) : null}
 
         {(state === 'accepted' || state === 'overridden') && canAct ? (
-          <ActionButton<{ classification_id: string; body: object }, StateTransitionResponse>
+          <ActionButton<{ classification_id: string }, StateTransitionResponse>
             actionId="denial.complete"
-            request={{ classification_id: classificationId, body: {} }}
+            request={{ classification_id: classificationId }}
             variant="primary"
             toastOnSuccess="Marked complete"
             onSuccess={onMutated}
@@ -179,9 +187,9 @@ export function RowDetailPanel({ row, onMutated }: RowDetailPanelProps) {
         ) : null}
 
         {canReclassify && state !== 'completed' ? (
-          <ActionButton<{ claim_id: number }, unknown>
+          <ActionButton<{ claim_id: number }>
             actionId="denial.classify-claim"
-            request={{ claim_id: claim.claim_id }}
+            request={{ claim_id: claimId }}
             variant="ghost"
             toastOnSuccess="Re-classified"
             onSuccess={onMutated}

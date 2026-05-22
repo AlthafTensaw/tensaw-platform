@@ -11,9 +11,7 @@
  * utility classes.
  */
 
-import { Pill } from '@tensaw/design-system/feedback';
-import { Spinner } from '@tensaw/design-system/feedback';
-import { Alert } from '@tensaw/design-system/feedback';
+import { Badge, Spinner, Alert } from '@tensaw/design-system/feedback';
 import type { DenialEvent, DenialEventCode } from '../actions/schemas';
 import { PrivacyField } from './PrivacyField';
 
@@ -40,12 +38,12 @@ function CodeRow({
   eventId: number;
   classificationId: string;
 }) {
-  const variant = kind === 'carc' ? 'danger' : 'warning';
+  const variant = kind === 'carc' ? 'error' : 'warning';
   return (
     <div className="flex items-center gap-2 text-xs">
-      <Pill variant="subtle">
+      <Badge variant={variant} size="sm">
         <code className="font-mono">{code.code}</code>
-      </Pill>
+      </Badge>
       <PrivacyField
         value={code.reason_text}
         classificationId={classificationId}
@@ -63,7 +61,7 @@ export function DenialEventsList({
 }: DenialEventsListProps) {
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm  ">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Spinner size="sm" /> Loading denial events…
       </div>
     );
@@ -92,21 +90,21 @@ export function DenialEventsList({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="text-xs uppercase tracking-wide   font-medium">
+      <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
         Source evidence · {visible.length}{' '}
         {visible.length === 1 ? 'event' : 'events'}
       </div>
       {visible.map((event) => (
         <div
           key={event.event_id}
-          className="bg-secondary rounded-md p-2.5 flex flex-col gap-1.5"
+          className="bg-muted rounded-md p-2.5 flex flex-col gap-1.5"
         >
-          <div className="text-xs  ">
+          <div className="text-xs text-muted-foreground">
             {formatDate(event.occurred_at)} · CPT{' '}
             <code className="font-mono">{event.procedure_code ?? '—'}</code> ·
             event #{event.event_id}
           </div>
-          {event.carc_codes.map((c: DenialEventCode, i: number) => (
+          {event.carc_codes.map((c, i) => (
             <CodeRow
               key={`carc-${event.event_id}-${c.code}-${i}`}
               code={c}
@@ -115,7 +113,7 @@ export function DenialEventsList({
               classificationId={classificationId}
             />
           ))}
-          {event.rarc_codes.map((c: DenialEventCode, i: number) => (
+          {event.rarc_codes.map((c, i) => (
             <CodeRow
               key={`rarc-${event.event_id}-${c.code}-${i}`}
               code={c}

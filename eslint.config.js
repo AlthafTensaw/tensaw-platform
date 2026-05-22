@@ -4,6 +4,7 @@ import tseslint from 'typescript-eslint';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import prettierConfig from 'eslint-config-prettier';
+import denialPhiPlugin from './apps/denial-analyst/eslint-plugins/no-raw-phi.js';
 
 export default tseslint.config(
   {
@@ -128,6 +129,16 @@ export default tseslint.config(
       // PascalCase / not `use*`), so rules-of-hooks fires. Disable in
       // test/story files only.
       'react-hooks/rules-of-hooks': 'off',
+    },
+  },
+  // Denial-analyst-only: PHI rendering must go through <PrivacyField>.
+  {
+    files: ['apps/denial-analyst/src/**/*.{ts,tsx}'],
+    plugins: {
+      'denial-tool-phi': denialPhiPlugin,
+    },
+    rules: {
+      'denial-tool-phi/no-raw-phi': 'error',
     },
   },
   prettierConfig,

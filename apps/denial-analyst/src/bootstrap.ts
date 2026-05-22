@@ -29,12 +29,28 @@ async function doBootstrap(): Promise<void> {
   // consistent.
   registerDenialActions();
 
-  // Start MSW only in development and if we aren't pointing at a remote backend.
-  // In test, msw/node is wired by vitest.setup.ts. In production, the real backend handles requests.
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-  const isRemoteBackend = baseUrl.includes('ngrok') || baseUrl.includes('primrose.health') || (baseUrl.startsWith('http') && !baseUrl.includes('localhost'));
-  
-  if (import.meta.env.DEV && !isRemoteBackend) {
+  // Start MSW only in development when explicitly enabled.
+  // In test, msw/node is wired by vitest.setup.ts.
+  // In production, the real backend handles requests.
+  const mswEnabled = import.meta.env.VITE_ENABLE_MSW === 'true';
+  if (import.meta.env.DEV && !mswEnabled && 'serviceWorker' in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    const isMswRegistration = (r: ServiceWorkerRegistration): boolean => {
+      const scriptUrls = [
+        r.active?.scriptURL,
+        r.waiting?.scriptURL,
+        r.installing?.scriptURL,
+      ].filter((u): u is string => Boolean(u));
+      return scriptUrls.some((u) => u.includes('mockServiceWorker.js'));
+    };
+    await Promise.all(
+      registrations
+        .filter(isMswRegistration)
+        .map((r) => r.unregister()),
+    );
+  }
+
+  if (import.meta.env.DEV && mswEnabled) {
     try {
       const { setupWorker } = await import('msw/browser');
       const { buildDenialHandlers } = await import('@tensaw/mock-server');
