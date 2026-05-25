@@ -210,6 +210,7 @@ import type {
   StepAssignmentRequest,
   StepAssignmentResponse,
   StepStatus,
+  WorkflowStep,
 } from '../schemas/denial';
 
 interface StoredAssignment {

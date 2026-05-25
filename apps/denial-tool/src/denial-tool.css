@@ -1,0 +1,21 @@
+/**
+ * Denial-tool-specific style overrides.
+ *
+ * PR-8: hide DataExplorer's toolbar search input — analyst feedback
+ * (May 22) said the search bar is unused. The platform DataExplorer
+ * doesn't expose a hide-search prop yet; this CSS hides it without
+ * touching the upstream component. Library ask filed separately for
+ * a `searchEnabled={false}` prop.
+ */
+
+[data-tensaw-component="data-explorer"] [data-tensaw-toolbar] input[type="search"],
+[data-tensaw-component="data-explorer"] [data-tensaw-toolbar] input[type="search"] + * {
+  display: none !important;
+}
+
+/* If selectors above don't match — DataExplorer might not have data-attrs yet —
+ * the alternative is wrapping the search container with our own .denial-hide-search class.
+ * The WorklistPage applies that class as a defensive fallback. */
+.denial-hide-search > div > .relative:first-child {
+  display: none !important;
+}

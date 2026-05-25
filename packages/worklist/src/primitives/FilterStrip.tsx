@@ -37,7 +37,7 @@ export function FilterStrip({
           <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-semibold">{activeCount}</span>
         ) : null}
       </div>
-      <div className="inline-flex items-center gap-2 flex-1 flex-wrap">{children}</div>
+      <div className="flex items-center gap-2 flex-1 flex-wrap">{children}</div>
       {showClear ? (
         <button type="button" className="text-teal-700 text-xs px-2 py-1 hover:underline" onClick={onClearAll}>
           Clear all
