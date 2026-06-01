@@ -28,9 +28,9 @@ export function SignInPage(): JSX.Element {
   const handleSubmit = () => {
     signIn({
       user: {
-        userId: `mock-${role.toLowerCase()}-sub`,
-        username: role.toLowerCase(),
-        email: `${role.toLowerCase()}@primrose.dev`,
+        userId: `2011`,
+        username: "Dev User",
+        email: `dev-user@primrose.local`,
         fullName: role === 'ANALYST' ? 'Renita K.' : role === 'MANAGER' ? 'Roopa M.' : 'Vijaya R.',
         roles: [role],
         permissions: resolvePermissions([role]),

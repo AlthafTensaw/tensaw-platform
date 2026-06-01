@@ -136,3 +136,13 @@ a:hover {
     scroll-behavior: auto !important;
   }
 }
+
+/* ----------------------------------------------------------------------------
+ * react-day-picker Theme Overrides
+ * -------------------------------------------------------------------------- */
+.rdp-root, .rdp {
+  --rdp-accent-color: hsl(var(--primary)) !important;
+  --rdp-accent-background-color: hsl(var(--primary) / 0.1) !important;
+  --rdp-today-color: hsl(var(--primary)) !important;
+}
+

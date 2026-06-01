@@ -162,8 +162,12 @@ export function loadConfig(env: Record<string, unknown>): PlatformConfig {
  * directly — do not import `config`.
  */
 export const config: PlatformConfig = loadConfig(
-  // Vite injects `import.meta.env`. In test contexts this falls back to process.env.
-  typeof import.meta !== 'undefined' && 'env' in import.meta
-    ? (import.meta.env)
-    : (process.env),
+  // Vite injects import.meta.env statically at build-time.
+  // We check import.meta.env directly; referencing '"env" in import.meta' fails
+  // in production browser modules because native import.meta has no 'env' key.
+  typeof import.meta !== 'undefined' && import.meta.env
+    ? import.meta.env
+    : typeof process !== 'undefined' && process.env
+      ? process.env
+      : {}
 );

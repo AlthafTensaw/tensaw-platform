@@ -14,6 +14,7 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { format as dfFormat } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/style.css';
 
 import { cn } from '../../utils/cn';
 

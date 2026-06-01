@@ -14,6 +14,7 @@ import { BulkActionBar } from '@tensaw/worklist';
 import { Button, Icon } from '@tensaw/design-system/primitives';
 import { Tooltip } from '@tensaw/design-system/overlays';
 import { ActionButton } from '@tensaw/wired-components';
+import { useAuthStore, getTokenProvider, config } from '@tensaw/runtime';
 import type { BulkAcceptResponse, WorklistRow } from '../actions/schemas';
 import { BulkAssignDialog, type BulkAssignTarget } from './BulkAssignDialog';
 import { evaluateD19Gate } from './d19Gate';
@@ -37,12 +38,51 @@ export function DenialBulkActionBar({
   const gate = evaluateD19Gate(selectedRows);
   const ids = selectedRows.map((r) => r.classification.classification_id);
 
-  const handleExport = (): void => {
-    const params = new URLSearchParams({
-      purpose: 'worklist_review',
-      format: 'csv',
-    });
-    window.location.href = `/api/v1/claims/worklist/export?${params.toString()}`;
+  const handleExport = async (): Promise<void> => {
+    try {
+      const params = new URLSearchParams({
+        purpose: 'worklist_review',
+        format: 'csv',
+      });
+      
+      const token = await getTokenProvider().getAccessToken();
+      const clinicId = useAuthStore.getState().clinicId;
+      
+      const headers = new Headers();
+      headers.set('X-Correlation-Id', `c-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`);
+      headers.set('X-Request-Id', `r-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`);
+      headers.set('X-Build-Version', config.app.buildVersion);
+      headers.set('X-App-Id', config.app.id);
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
+      if (clinicId !== null) {
+        headers.set('X-Clinic-Id', String(clinicId));
+      }
+      if (config.api.baseUrl.includes('ngrok')) {
+        headers.set('ngrok-skip-browser-warning', 'true');
+      }
+
+      const response = await fetch(`${config.api.baseUrl}/v1/claims/worklist/export?${params.toString()}`, {
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'worklist_export.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export CSV:', error);
+    }
   };
 
   // Build BulkAssignTargets from the selected worklist rows
