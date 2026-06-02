@@ -81,6 +81,10 @@ export function registerDenialActions(): void {
         'denial.bulk-accept',
         'denial.classify-claim',
         'denial.step-complete', // PR-5: step completion can auto-transition state
+        'denial.bulk-assign',
+        'denial.set-step-assignment',
+        'denial.clear-step-assignment',
+        'denial.set-step-status',
       ],
     },
   });
@@ -102,6 +106,10 @@ export function registerDenialActions(): void {
         'denial.override',
         'denial.complete',
         'denial.step-complete', // PR-5: refresh per-step completion state
+        'denial.bulk-assign',
+        'denial.set-step-assignment',
+        'denial.clear-step-assignment',
+        'denial.set-step-status',
       ],
     },
   });

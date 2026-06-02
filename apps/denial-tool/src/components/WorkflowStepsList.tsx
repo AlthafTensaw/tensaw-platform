@@ -17,6 +17,7 @@
 
 import { useState } from 'react';
 import { useActionMutation } from '@tensaw/actions';
+import { useQueryClient } from '@tanstack/react-query';
 import { Icon } from '@tensaw/design-system/primitives';
 import { Alert } from '@tensaw/design-system/feedback';
 import { Tooltip } from '@tensaw/design-system/overlays';
@@ -66,6 +67,7 @@ export function WorkflowStepsList({
   useUnifiedStatusEndpoint = false,
 }: WorkflowStepsListProps): JSX.Element {
   const [bulkOpen, setBulkOpen] = useState(false);
+  const queryClient = useQueryClient();
   const steps = classification.workflow_steps;
   const firstIncomplete = steps.find((s) => !s.completed_at);
   const allComplete = steps.length > 0 && !firstIncomplete;
@@ -73,6 +75,18 @@ export function WorkflowStepsList({
     (s) => deriveStatus(s) === 'in_progress',
   ).length;
   const doneCount = steps.filter((s) => s.completed_at !== null && s.completed_at !== undefined).length;
+
+  // v3.0.2 fix (Vivek 2026-05-29 + billing team 2026-05-26): invalidate the
+  // tasks-mine query after any assignment-changing mutation. Without this,
+  // analysts viewing My Tasks while assignments change elsewhere had to
+  // manually refresh to see updates. React Query treats the actionId as
+  // a key prefix so this invalidates all variants regardless of request
+  // params.
+  const invalidateTasksMine = (): void => {
+    void queryClient.invalidateQueries({
+      queryKey: ['denial.list-tasks-mine'],
+    });
+  };
 
   const [fireComplete] = useActionMutation<
     { classification_id: string; step_number: number },
@@ -148,7 +162,7 @@ export function WorkflowStepsList({
       priority: derivePriority(step),
     })
       .then((result) => {
-        if (result.ok) onAssignmentChanged(result.data);
+        if (result.ok) { onAssignmentChanged(result.data); invalidateTasksMine(); }
       })
       .catch((err: unknown) => {
         // eslint-disable-next-line no-console
@@ -160,10 +174,14 @@ export function WorkflowStepsList({
     fireClear({
       classification_id: classification.classification_id,
       step_number: step.step,
-    }).catch((err: unknown) => {
-      // eslint-disable-next-line no-console
-      console.warn('clear-assignment dispatch failed', err);
-    });
+    })
+      .then((result) => {
+        if (result.ok) invalidateTasksMine();
+      })
+      .catch((err: unknown) => {
+        // eslint-disable-next-line no-console
+        console.warn('clear-assignment dispatch failed', err);
+      });
   };
 
   const handleDueDateChange = (
@@ -178,7 +196,7 @@ export function WorkflowStepsList({
       priority: derivePriority(step),
     })
       .then((result) => {
-        if (result.ok) onAssignmentChanged(result.data);
+        if (result.ok) { onAssignmentChanged(result.data); invalidateTasksMine(); }
       })
       .catch((err: unknown) => {
         // eslint-disable-next-line no-console
@@ -198,7 +216,7 @@ export function WorkflowStepsList({
       priority: next,
     })
       .then((result) => {
-        if (result.ok) onAssignmentChanged(result.data);
+        if (result.ok) { onAssignmentChanged(result.data); invalidateTasksMine(); }
       })
       .catch((err: unknown) => {
         // eslint-disable-next-line no-console

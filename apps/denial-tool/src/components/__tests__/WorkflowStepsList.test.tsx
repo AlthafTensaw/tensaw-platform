@@ -17,7 +17,25 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WorkflowStepsList } from '../WorkflowStepsList';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
+
+function renderWithClient(ui: React.ReactElement) {
+  return render(
+    <QueryClientProvider client={queryClient}>
+      {ui}
+    </QueryClientProvider>
+  );
+}
 import type {
   Classification,
   ClassificationSource,
@@ -147,7 +165,7 @@ describe('WorkflowStepsList — v2.0.4', () => {
     const cls = buildTestClassification({
       steps: [{ step: 1 }, { step: 2 }],
     });
-    render(
+    renderWithClient(
       <WorkflowStepsList
         classification={cls}
         canAct
@@ -179,7 +197,7 @@ describe('WorkflowStepsList — v2.0.4', () => {
     const cls = buildTestClassification({
       steps: [{ step: 1 }, { step: 2 }],
     });
-    render(
+    renderWithClient(
       <WorkflowStepsList
         classification={cls}
         canAct
@@ -200,7 +218,7 @@ describe('WorkflowStepsList — v2.0.4', () => {
 
   it('In-progress segment is disabled when useUnifiedStatusEndpoint=false', () => {
     const cls = buildTestClassification({ steps: [{ step: 1 }] });
-    render(
+    renderWithClient(
       <WorkflowStepsList
         classification={cls}
         canAct
@@ -216,7 +234,7 @@ describe('WorkflowStepsList — v2.0.4', () => {
 
   it('In-progress segment is enabled when useUnifiedStatusEndpoint=true (v2.0.5)', () => {
     const cls = buildTestClassification({ steps: [{ step: 1 }] });
-    render(
+    renderWithClient(
       <WorkflowStepsList
         classification={cls}
         canAct
@@ -234,7 +252,7 @@ describe('WorkflowStepsList — v2.0.4', () => {
     const cls = buildTestClassification({
       steps: [{ step: 1 }, { step: 2 }],
     });
-    render(
+    renderWithClient(
       <WorkflowStepsList
         classification={cls}
         canAct
@@ -250,7 +268,7 @@ describe('WorkflowStepsList — v2.0.4', () => {
 
   it('canAct=false disables all status controls', () => {
     const cls = buildTestClassification({ steps: [{ step: 1 }] });
-    render(
+    renderWithClient(
       <WorkflowStepsList
         classification={cls}
         canAct={false}
@@ -280,7 +298,7 @@ describe('WorkflowStepsList — v2.0.4', () => {
     });
 
     const cls = buildTestClassification({ steps: [{ step: 1 }] });
-    render(
+    renderWithClient(
       <WorkflowStepsList
         classification={cls}
         canAct

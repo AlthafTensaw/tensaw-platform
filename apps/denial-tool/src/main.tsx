@@ -16,6 +16,8 @@ void bootstrap();
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root element #root not found');
 
+console.log("started....")
+
 createRoot(rootEl).render(
   <StrictMode>
     <BrowserRouter>

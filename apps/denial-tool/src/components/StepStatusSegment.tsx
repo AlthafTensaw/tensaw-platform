@@ -100,7 +100,7 @@ export function StepStatusSegment({
             role="radio"
             type="button"
             aria-checked={active}
-            disabled={dis && !active}
+            disabled={dis}
             onClick={() => {
               if (!dis) onChange(seg.value);
             }}

@@ -24,6 +24,9 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: 'pending,in_progress,complete', label: 'All (incl. complete)' },
 ];
 
+// v3.0.2 fix (Vivek 2026-05-25 #2): Radix Select.Item requires non-empty
+// string values. Use 'all' as the "no filter" sentinel; the change handlers
+// map it back to an empty filter state.
 const PRIORITY_OPTIONS: { value: string; label: string }[] = [
   { value: 'all', label: 'Any priority' },
   { value: 'high', label: 'High' },
@@ -81,12 +84,12 @@ export function TasksMinePage(): JSX.Element {
   };
 
   const onPriorityFilterChange = (value: string): void => {
-    setFilter('priority', value !== 'all' ? ([value] as StepPriority[]) : []);
+    setFilter('priority', value === 'all' ? [] : ([value] as StepPriority[]));
   };
 
   const onDueFilterChange = (value: string): void => {
     const today = new Date();
-    if (value === 'all' || value === '') {
+    if (value === 'all') {
       setFilter('due_before', null);
       setFilter('due_after', null);
       return;
@@ -121,22 +124,10 @@ export function TasksMinePage(): JSX.Element {
     ? 'pending,in_progress,complete'
     : filters.status.join(',');
   const priorityValue = filters.priority[0] ?? 'all';
-
-  const dueValue = useMemo(() => {
-    if (!filters.due_before && !filters.due_after) return 'all';
-    const today = toISODate(new Date());
-    if (filters.due_before && !filters.due_after) {
-      if (filters.due_before < today) return 'overdue';
-      return 'all';
-    }
-    if (filters.due_before && filters.due_after) {
-      if (filters.due_before === today && filters.due_after === today) return 'today';
-      const diffDays = Math.round((new Date(filters.due_before).getTime() - new Date(filters.due_after).getTime()) / 86400000);
-      if (diffDays <= 7) return 'week';
-      return 'month';
-    }
-    return 'all';
-  }, [filters.due_before, filters.due_after]);
+  const dueValue =
+    filters.due_before === null && filters.due_after === null
+      ? 'all'
+      : derivedDueValue(filters.due_before, filters.due_after);
 
   const handleMutated = (): void => {
     refetch();
@@ -195,21 +186,18 @@ export function TasksMinePage(): JSX.Element {
           onValueChange={onStatusFilterChange}
           options={STATUS_OPTIONS}
           aria-label="Status filter"
-          className="w-48"
         />
         <Select<string>
           value={priorityValue}
           onValueChange={onPriorityFilterChange}
           options={PRIORITY_OPTIONS}
           aria-label="Priority filter"
-          className="w-36"
         />
         <Select<string>
           value={dueValue}
           onValueChange={onDueFilterChange}
           options={DUE_OPTIONS}
           aria-label="Due date filter"
-          className="w-40"
         />
         <button
           type="button"
@@ -288,4 +276,27 @@ export function TasksMinePage(): JSX.Element {
       ) : null}
     </div>
   );
+}
+
+// Derive the Due filter Select value from the current due_before/due_after
+// filter state. Inverse of onDueFilterChange. Used so the Select reflects
+// the right option when filters come from localStorage on page load.
+function derivedDueValue(
+  dueBefore: string | null,
+  dueAfter: string | null,
+): string {
+  if (dueBefore === null && dueAfter === null) return 'all';
+  const today = toISODate(new Date());
+  if (dueBefore === today && dueAfter === today) return 'today';
+  if (dueBefore !== null && dueAfter === null) return 'overdue';
+  if (dueBefore !== null && dueAfter !== null) {
+    const beforeDate = new Date(dueBefore);
+    const afterDate = new Date(dueAfter);
+    const diffDays = Math.round(
+      (beforeDate.getTime() - afterDate.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    if (diffDays >= 25 && diffDays <= 35) return 'month';
+    if (diffDays >= 5 && diffDays <= 10) return 'week';
+  }
+  return 'all';
 }

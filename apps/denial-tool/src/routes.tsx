@@ -1,20 +1,23 @@
 /**
- * Top-level routes for the denial-tool app.
+ * Top-level routes for the denial-tool app — v3.0.
  *
  * Layout:
  *   /sign-in                (public)
- *   /                       → redirect to /worklist
- *   /worklist               (auth + denial.read)
- *   /cost                   (auth + denial.view_cost — manager/admin only)
+ *   /                       → redirect to /inbox
+ *   /inbox                  (auth + denial.read)   ← v3.0 3-pane shell (was /worklist)
+ *   /worklist               (alias of /inbox for backwards compat)
+ *   /tasks                  (auth + denial.read)   ← TasksMinePage (still v2.x shape)
+ *   /cost                   (auth + denial.view_cost)
  *
- * Permission gating done by RequireAuth / RequirePermission outlets.
+ * Note: /worklist kept as alias since muscle memory + saved bookmarks point
+ * to it. v3.1 may sunset the alias.
  */
 
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import { RequireAuth, RequirePermission } from './auth/RequireAuth';
 import { SignInPage } from './pages/sign-in/SignInPage';
-import { WorklistRoute } from './pages/worklist/WorklistRoute';
+import { DenialInboxPage } from './pages/inbox/DenialInboxPage';
 import { CostRoute } from './pages/cost/CostRoute';
 import { TasksMinePage } from './pages/tasks/TasksMinePage';
 
@@ -24,11 +27,12 @@ export function AppRoutes(): JSX.Element {
       <Route path="/sign-in" element={<SignInPage />} />
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
-          <Route index element={<Navigate to="/worklist" replace />} />
+          <Route index element={<Navigate to="/inbox" replace />} />
           <Route
             element={<RequirePermission permission="denial.read" />}
           >
-            <Route path="/worklist" element={<WorklistRoute />} />
+            <Route path="/inbox" element={<DenialInboxPage />} />
+            <Route path="/worklist" element={<Navigate to="/inbox" replace />} />
             <Route path="/tasks" element={<TasksMinePage />} />
           </Route>
           <Route
@@ -38,7 +42,7 @@ export function AppRoutes(): JSX.Element {
           </Route>
         </Route>
       </Route>
-      <Route path="*" element={<Navigate to="/worklist" replace />} />
+      <Route path="*" element={<Navigate to="/inbox" replace />} />
     </Routes>
   );
 }

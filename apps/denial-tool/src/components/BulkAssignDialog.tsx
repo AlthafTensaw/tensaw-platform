@@ -17,6 +17,7 @@
 
 import { useState } from 'react';
 import { useActionMutation } from '@tensaw/actions';
+import { useQueryClient } from '@tanstack/react-query';
 import { Dialog } from '@tensaw/design-system/overlays';
 import { Select, DatePicker } from '@tensaw/design-system/forms';
 import { Button, Icon } from '@tensaw/design-system/primitives';
@@ -98,6 +99,7 @@ export function BulkAssignDialog({
   const [includePriority, setIncludePriority] = useState(false);
   const [priority, setPriority] = useState<StepPriority>('normal');
   const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [fireBulk] = useActionMutation<
@@ -162,6 +164,11 @@ export function BulkAssignDialog({
       .then((result) => {
         setIsSubmitting(false);
         if (result.ok) {
+          // v3.0.2 fix: invalidate tasks-mine so My Tasks page reflects
+          // newly-assigned tasks without manual refresh.
+          void queryClient.invalidateQueries({
+            queryKey: ['denial.list-tasks-mine'],
+          });
           onSuccess(result.data);
           onClose();
         } else {

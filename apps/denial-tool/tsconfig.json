@@ -15,9 +15,10 @@
     { "path": "../../packages/design-system" },
     { "path": "../../packages/visualization" },
     { "path": "../../packages/composition" },
+    { "path": "../../packages/archetypes" },
     { "path": "../../packages/actions" },
-    { "path": "../../packages/wired-components" },
     { "path": "../../packages/worklist" },
-    { "path": "../../packages/mock-server" }
+    { "path": "../../packages/mock-server" },
+    { "path": "../../packages/wired-components" }
   ]
 }

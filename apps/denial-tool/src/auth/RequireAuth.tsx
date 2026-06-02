@@ -15,13 +15,19 @@
 
 import type { ReactElement } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@tensaw/runtime';
+import { useAuthStore, type AuthStore } from '@tensaw/runtime';
 import type { Permission } from './permissions';
 
-export function RequireAuth(): ReactElement {
-  const isAuthenticated = useAuthStore((s) => Boolean(s.user));
+export function RequireAuth(): ReactElement | null {
+  const status = useAuthStore((s: AuthStore) => s.status);
+  const user = useAuthStore((s: AuthStore) => s.user);
   const location = useLocation();
-  if (!isAuthenticated) {
+
+  // While the persist middleware is rehydrating from localStorage the status
+  // stays 'unknown' for one render. Return null to avoid a premature redirect.
+  if (status === 'unknown') return null;
+
+  if (!user) {
     const next = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/sign-in?next=${next}`} replace />;
   }
@@ -34,9 +40,12 @@ interface RequirePermissionProps {
 
 export function RequirePermission({
   permission,
-}: RequirePermissionProps): ReactElement {
-  const user = useAuthStore((s) => s.user);
+}: RequirePermissionProps): ReactElement | null {
+  const status = useAuthStore((s: AuthStore) => s.status);
+  const user = useAuthStore((s: AuthStore) => s.user);
   const location = useLocation();
+
+  if (status === 'unknown') return null;
 
   if (!user) {
     const next = encodeURIComponent(location.pathname + location.search);

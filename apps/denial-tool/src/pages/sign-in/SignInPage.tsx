@@ -6,13 +6,18 @@
  * useAuthStore.signIn() with mock identity + the resolved permissions
  * for the chosen role.
  *
- * The dispatcher's permission gate works identically against either
- * source — `user.permissions[]` is the only contract.
+ * v3.0.2 fixes (Vivek 2026-05-25 #5, #6 + 2026-05-29):
+ *  - Replaced all inline styles with Tailwind utility classes.
+ *  - Dropped references to undeclared `--tw-color-*` CSS variables that
+ *    weren't in the design-system token set.
+ *  - Tightened the signIn selector typing — the runtime AuthUser uses
+ *    `userId` (not `id`) and `fullName` (not `name`); v2.x relied on
+ *    loose `unknown` typing that hid the field-name mismatch from tsc.
  */
 
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuthStore } from '@tensaw/runtime';
+import { useAuthStore, type AuthStore } from '@tensaw/runtime';
 import {
   ALL_ROLES,
   resolvePermissions,
@@ -23,39 +28,53 @@ export function SignInPage(): JSX.Element {
   const [role, setRole] = useState<Role>('ANALYST');
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const signIn = useAuthStore((s) => s.signIn);
+  const signIn = useAuthStore((s: AuthStore) => s.signIn);
 
-  const handleSubmit = () => {
+  const handleSubmit = (): void => {
     signIn({
       user: {
-        userId: `2011`,
-        username: "Dev User",
-        email: `dev-user@primrose.local`,
-        fullName: role === 'ANALYST' ? 'Renita K.' : role === 'MANAGER' ? 'Roopa M.' : 'Vijaya R.',
+        userId: `mock-${role.toLowerCase()}-sub`,
+        username: role.toLowerCase(),
+        email: `${role.toLowerCase()}@primrose.dev`,
+        fullName:
+          role === 'ANALYST'
+            ? 'Renita K.'
+            : role === 'MANAGER'
+              ? 'Roopa M.'
+              : 'Vijaya R.',
         roles: [role],
         permissions: resolvePermissions([role]),
-        clinicIds: [],
+        clinicIds: ['c-001'],
       },
-      clinicId: null,
+      clinicId: 'c-001',
     });
-    const next = params.get('next') ?? '/worklist';
+    // v3.0 routes default landing to /inbox; /worklist still works as an
+    // alias for muscle memory + bookmarks.
+    const next = params.get('next') ?? '/inbox';
     navigate(next, { replace: true });
   };
 
   return (
-    <div style={containerStyle}>
-      <div style={cardStyle}>
-        <h1 style={titleStyle}>Tensaw — Denial Analysis</h1>
-        <p style={subtitleStyle}>
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-background p-7 shadow-lg flex flex-col gap-3.5">
+        <h1
+          className="m-0 text-xl font-medium"
+          style={{ color: '#0f766e' }}
+        >
+          Tensaw — Denial Analysis
+        </h1>
+        <p className="m-0 text-sm text-muted-foreground">
           Mock sign-in (development). Production uses Cognito Hosted UI.
         </p>
 
-        <label style={labelStyle}>
+        <label className="flex flex-col gap-1.5 text-sm font-medium">
           Role
           <select
             value={role}
-            onChange={(e) => setRole(e.target.value as Role)}
-            style={selectStyle}
+            onChange={(e) => {
+              setRole(e.target.value as Role);
+            }}
+            className="rounded-md border border-border bg-background px-2.5 py-2 text-sm outline-none focus:border-primary"
           >
             {ALL_ROLES.map((r) => (
               <option key={r} value={r}>
@@ -65,79 +84,19 @@ export function SignInPage(): JSX.Element {
           </select>
         </label>
 
-        <div style={permsHintStyle}>
+        <div className="font-mono text-xs text-muted-foreground">
           Grants: {resolvePermissions([role]).join(', ')}
         </div>
 
-        <button type="button" onClick={handleSubmit} style={buttonStyle}>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="rounded-md px-4 py-2.5 text-sm font-medium text-white hover:opacity-90"
+          style={{ backgroundColor: '#0d9488' }}
+        >
           Sign in as {role}
         </button>
       </div>
     </div>
   );
 }
-
-const containerStyle: React.CSSProperties = {
-  minHeight: '100vh',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'var(--tw-color-surface-muted, #FAFAFB)',
-};
-
-const cardStyle: React.CSSProperties = {
-  width: 380,
-  padding: 28,
-  background: 'white',
-  borderRadius: 12,
-  border: '1px solid var(--tw-color-border-default)',
-  boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 14,
-};
-
-const titleStyle: React.CSSProperties = {
-  margin: 0,
-  fontSize: '1.25rem',
-  fontWeight: 500,
-  color: 'var(--tw-color-brand-header)',
-};
-
-const subtitleStyle: React.CSSProperties = {
-  margin: 0,
-  fontSize: '0.875rem',
-  color: 'var(--tw-color-text-muted)',
-};
-
-const labelStyle: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 6,
-  fontSize: '0.875rem',
-  fontWeight: 500,
-};
-
-const selectStyle: React.CSSProperties = {
-  padding: '8px 10px',
-  border: '1px solid var(--tw-color-border-default)',
-  borderRadius: 6,
-  fontSize: '0.875rem',
-};
-
-const permsHintStyle: React.CSSProperties = {
-  fontSize: '0.75rem',
-  color: 'var(--tw-color-text-muted)',
-  fontFamily: 'ui-monospace, monospace',
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: '10px 16px',
-  background: 'var(--tw-color-brand-primary)',
-  color: 'white',
-  border: 'none',
-  borderRadius: 6,
-  fontWeight: 500,
-  cursor: 'pointer',
-  fontSize: '0.875rem',
-};

@@ -105,6 +105,10 @@ export const WorkflowStepSchema = z.object({
   // v1.7.2: per-step assignment fields (all nullable when no assignment exists).
   assigned_to_user_id: z.number().int().min(1).nullable().optional(),
   assigned_by_user_id: z.number().int().min(1).nullable().optional(),
+  // v2.0.0 (Ask 14, option 3): denormalized display name so FE doesn't N+1 the
+  // user directory. Format: "Firstname L." Populated server-side via bulk lookup;
+  // null when assigned_to_user_id is null.
+  assignee_name: z.string().nullable().optional(),
   assigned_at: z.string().nullable().optional(),
   due_date: z.string().nullable().optional(),
   // Server-computed: due_date if set, else classified_at + sla_days. Always present.
@@ -150,7 +154,18 @@ export type Classification = z.infer<typeof ClassificationSchema>;
 export const ClaimSummarySchema = z.object({
   claim_id: z.number().int(),
   clinic: z.string().nullable(),
+  // v2.0.0 additions (Ask 6): explicit name + alias fields. `clinic` kept
+  // for back-compat — carries the alias same as `clinic_alias`.
+  clinic_name: z.string().nullable().optional(),
+  clinic_alias: z.string().nullable().optional(),
   primary_payer_name: z.string().nullable(),
+  primary_payer_alias: z.string().nullable().optional(),
+  facility_name: z.string().nullable().optional(),
+  facility_alias: z.string().nullable().optional(),
+  // v2.0.1 additions (F1): patient identifier denormalized onto ClaimSummary
+  // so left-pane cards don't need N+1 ClaimDetail fetches.
+  patient_name: z.string().nullable().optional(),
+  mrn: z.string().nullable().optional(),
   dos: z.string(),
   amount: DecimalStringSchema,
   net_pending: DecimalStringSchema,

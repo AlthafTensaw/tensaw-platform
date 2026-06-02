@@ -7,7 +7,7 @@
  * just isn't visible).
  *
  * Kept as a standalone component (rather than inlined in
- * RowDetailPanel only) so future surfaces — e.g. an admin per-claim
+ * WorkPane only — v3.0 three-pane shell) so future surfaces — e.g. an admin per-claim
  * inspector — can reuse it.
  */
 
@@ -28,9 +28,9 @@ export function RunClassifierNowButton({
   if (!has('denial.classify_claim')) return null;
 
   return (
-    <ActionButton<{ claimId: number }, Classification>
+    <ActionButton<{ claim_id: number }, Classification>
       actionId="denial.classify-claim"
-      request={{ claimId }}
+      request={{ claim_id: claimId }}
       variant="ghost"
       toastOnSuccess="Re-classified"
       onSuccess={onClassified}

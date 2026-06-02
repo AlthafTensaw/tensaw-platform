@@ -35,7 +35,44 @@ const PAYERS = [
   'Tricare West',
 ] as const;
 
+// v2.0.0 (Ask 6): payer/clinic aliases as separate parallel arrays — index-aligned
+// with PAYERS / CLINICS. Real BE resolves via aliases.yaml; FE mock matches that
+// shape so the wire is identical.
+const PAYER_ALIASES = [
+  'TX Mcare',
+  'BCBS-TX',
+  'UHC',
+  'Aetna BH',
+  'Cigna HS',
+  'Humana GP',
+  'TriCare W',
+] as const;
+
 const CLINICS = ['LSAT', 'PRIM_BHM', 'PRIM_NSH'] as const;
+
+// Full names corresponding to the CLINICS abbreviations (which are themselves
+// pre-existing aliases per BE handback Ask 6 note: "clinic field carries the
+// alias for back-compat").
+const CLINIC_NAMES = [
+  'Live Specialty Allergy Treatment',
+  'Primrose Cardiology Birmingham',
+  'Primrose Cardiology Nashville',
+] as const;
+
+// v2.0.1 (F1): patient identifiers denormalized onto ClaimSummary. Seeded
+// deterministically so tests can rely on values.
+const PATIENTS: ReadonlyArray<{ name: string; mrn: string }> = [
+  { name: 'Henderson, Joel', mrn: '72834' },
+  { name: 'Patel, Anika', mrn: '84512' },
+  { name: 'Okafor, Chidi', mrn: '91038' },
+  { name: 'Romero, Lucia', mrn: '63927' },
+  { name: 'Whitfield, Marcus', mrn: '50184' },
+  { name: 'Singh, Priya', mrn: '47591' },
+  { name: 'Donovan, Sarah', mrn: '58472' },
+  { name: 'Yamamoto, Kenji', mrn: '34028' },
+  { name: 'Olusegun, Tobi', mrn: '69103' },
+  { name: 'Cardenas, Maria', mrn: '78256' },
+];
 
 // ---------------------------------------------------------------------------
 // Workflow step fixtures
@@ -208,8 +245,13 @@ interface RowSpec {
 }
 
 function buildRow(spec: RowSpec): WorklistRow {
-  const payer = PAYERS[spec.payer_idx % PAYERS.length]!;
-  const clinic = CLINICS[(spec.clinic_idx ?? 0) % CLINICS.length]!;
+  const payerIdx = spec.payer_idx % PAYERS.length;
+  const payer = PAYERS[payerIdx]!;
+  const payerAlias = PAYER_ALIASES[payerIdx]!;
+  const clinicIdx = (spec.clinic_idx ?? 0) % CLINICS.length;
+  const clinic = CLINICS[clinicIdx]!;
+  const clinicName = CLINIC_NAMES[clinicIdx]!;
+  const patient = PATIENTS[spec.seed % PATIENTS.length]!;
   const dos = isoDate(-spec.aging_days);
   const sla = isoDate(spec.sla_days_from_now);
   const classifiedAt = isoDatetime(-1, -(spec.seed % 24));
@@ -240,7 +282,14 @@ function buildRow(spec: RowSpec): WorklistRow {
   const claim: ClaimSummary = {
     claim_id: spec.claim_id,
     clinic,
+    clinic_name: clinicName,
+    clinic_alias: clinic,
     primary_payer_name: payer,
+    primary_payer_alias: payerAlias,
+    facility_name: null,
+    facility_alias: null,
+    patient_name: patient.name,
+    mrn: patient.mrn,
     dos,
     amount: spec.amount,
     net_pending: spec.net_pending,

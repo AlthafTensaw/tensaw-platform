@@ -21,7 +21,8 @@
     "./utils": "./src/utils/index.ts",
     "./types/props": "./src/types/props.ts",
     "./styles/global.css": "./src/styles/global.css",
-    "./tailwind.config.js": "./tailwind.config.js"
+    "./tailwind.config.js": "./tailwind.config.js",
+    "./tailwind-preset": "./tailwind.config.js"
   },
   "scripts": {
     "build": "tsc -b",

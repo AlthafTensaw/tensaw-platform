@@ -55,7 +55,7 @@ export function ClaimDetailHeader({
       </Alert>
     );
   }
-
+console.log("pat", detail)
   return (
     <div className="bg-card px-4 py-3 border-b border-border flex flex-col gap-3">
       {/* Patient + provider row */}

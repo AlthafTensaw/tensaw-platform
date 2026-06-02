@@ -1,6 +1,22 @@
 /**
- * Denial-tool-specific style overrides.
+ * Denial-tool styles.
  *
+ * v3.0.2: Added explicit @tailwind directives so utility classes from
+ * TSX source files get compiled when PostCSS+Tailwind pick this file up.
+ * Previously, the app relied on Tailwind directives being injected
+ * from a workspace-level CSS file, which Vivek's integration showed
+ * to be unreliable (2026-05-25 #4).
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+ * Denial-tool-specific style overrides
+ * --------------------------------------------------------------------------- */
+
+/**
  * PR-8: hide DataExplorer's toolbar search input — analyst feedback
  * (May 22) said the search bar is unused. The platform DataExplorer
  * doesn't expose a hide-search prop yet; this CSS hides it without

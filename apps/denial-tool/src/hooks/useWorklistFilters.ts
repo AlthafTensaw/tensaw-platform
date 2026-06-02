@@ -85,7 +85,13 @@ export interface UseWorklistFiltersResult {
 }
 
 export function useWorklistFilters(): UseWorklistFiltersResult {
-  const userId = useAuthStore((s) => s.user?.userId);
+  // v3.0.2 fix: runtime AuthUser exposes `userId` not `id`. Was reading the
+  // wrong field, causing localStorage key to fall back to 'anonymous' for
+  // every signed-in user → filter state shared across users on the same
+  // browser. Reported by Vivek (2026-05-29).
+  const userId = useAuthStore(
+    (s: { user: { userId?: string } | null }) => s.user?.userId,
+  );
   const [filters, setFilters] = useState<WorklistFilters>(() =>
     loadFilters(userId),
   );

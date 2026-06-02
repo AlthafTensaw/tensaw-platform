@@ -1,19 +1,16 @@
 /**
- * Denial Analysis Tool — app bootstrap.
+ * Denial Analysis Tool — app bootstrap (v3.0).
  *
  * Runs once at app start to:
- *   1. Register the denial-tool action set with the @tensaw/actions
- *      dispatcher (12 actions per tech spec §7).
- *   2. Start the MSW worker in dev so action endpoints resolve against
- *      buildDenialHandlers from @tensaw/mock-server.
+ *   1. Register the v2.x action set (12 actions per tech spec §7)
+ *   2. Register the v3.0 action set (9 new actions for right-pane tabs)
+ *   3. Start the MSW worker in dev with both v2 and v3 handlers
  *
  * bootstrap() is idempotent: concurrent callers share a cached promise.
- *
- * setRouterAdapter is wired inside <AppLayout> (we need React Router's
- * useNavigate to drive it), matching both existing apps.
  */
 
 import { registerDenialActions } from './actions';
+import { registerDenialV3Actions } from './actions/registryV3';
 
 let bootstrapPromise: Promise<void> | null = null;
 
@@ -24,19 +21,20 @@ export function bootstrap(): Promise<void> {
 }
 
 async function doBootstrap(): Promise<void> {
-  // Register actions first so anything that depends on a registered
-  // action id (MSW handler request schemas, useActionQuery callers) is
-  // consistent.
   registerDenialActions();
+  registerDenialV3Actions();
 
-  // Start MSW only in development. In test, msw/node is wired by
-  // vitest.setup.ts. In production, the real backend handles requests.
   if (import.meta.env.DEV) {
     try {
       const { setupWorker } = await import('msw/browser');
-      const { buildDenialHandlers } = await import('@tensaw/mock-server');
+      const { buildDenialHandlers, buildDenialV3Handlers } = await import(
+        '@tensaw/mock-server'
+      );
       const { config } = await import('@tensaw/runtime');
-      const worker = setupWorker(...buildDenialHandlers(config.api.baseUrl));
+      const worker = setupWorker(
+        ...buildDenialHandlers(config.api.baseUrl),
+        ...buildDenialV3Handlers(config.api.baseUrl),
+      );
       await worker.start({ quiet: true, onUnhandledRequest: 'bypass' });
     } catch (e) {
       console.warn('[bootstrap] MSW failed to start:', e);
