@@ -1,0 +1,15 @@
+import urllib.request
+import json
+
+token = "eyJraWQiOiIrSEJQazhaajhyQUlHM2hhYTVQNGZjcDRBR2FUR0h6YWpPZVJZY3FoZlBzPSIsImFsZyI6IlJTMjU2In0.eyJ0ZW5hbnRfaWQiOiJwcmltcm9zZSIsInN1YiI6ImU0YThmNDM4LWEwNDEtNzBlMi01ZTExLTI3OTM0ZjgyYWVmZSIsImNvZ25pdG86Z3JvdXBzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJodHRwczovL2NvZ25pdG8taWRwLnVzLWVhc3QtMS5hbWF6b25hd3MuY29tL3VzLWVhc3QtMV9QVTF5aEZoQ3giLCJkaXNwbGF5X25hbWUiOiJkZW1vQHRlbnNhdy5kZXYiLCJjbGllbnRfaWQiOiI3ZnA1OTlpaWJjdnZwb2c3czV1bGM4cThmaCIsIm9yaWdpbl9qdGkiOiI4NDI3NmIzOS05MWNlLTRhYjAtYmVhMC1hMDIyMDg1Y2FkY2QiLCJldmVudF9pZCI6ImRlMTc2MWIxLTYxZGQtNDczYi04NmI0LWEzZTY5OGU1Y2I0OSIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE3ODEwMDYzMDIsImV4cCI6MTc4MTAwNzI0NiwiaWF0IjoxNzgxMDA2OTQ2LCJqdGkiOiJjMjgyOWViYS1jNTRmLTRmY2EtOWEyYS1lMDhjYzgyMjZjNTAiLCJ1c2VybmFtZSI6ImRlbW9AdGVuc2F3LmRldiJ9.cNYyDg3A9Ytt78T0L1bU_FOGSGTdVBGVfOFi4Ia77RujhVtsYymnzq6j4LcccTqJIbMwXY0my85MtSSWfcHz0E-LU5dSzThUaqmbdy670l6wAHqK9MJDuS1BAF9Lil8R7ZATE7pwiYELQfB1dIEjSFRsnFUD9VjCUpe35DSOZHz7_kpElbSnNg6w7tCaN005NGh-0ffNNbK5ZswQoZBSK4X4ftcbvoPcl3eQZ7qlDM_CxcKybiOxHLpa3Bi48B3UPLbkDFkf95JUpsyoEGjzyVF5i1zuh8Rd21l-1F_VOBPY-s8tv5ESKWQhQEBkvR09TZGHNWouIeFy0dlGg9fMkA"
+req = urllib.request.Request("http://localhost:8001/denial_tool.service/v1/claims/worklist")
+req.add_header("Authorization", f"Bearer {token}")
+try:
+    with urllib.request.urlopen(req) as response:
+        print(f"Status: {response.status}")
+        data = response.read()
+        print(json.dumps(json.loads(data), indent=2))
+except urllib.error.HTTPError as e:
+    print(f"HTTPError: {e.code}")
+    data = e.read()
+    print(data.decode('utf-8'))

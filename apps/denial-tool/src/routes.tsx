@@ -21,10 +21,14 @@ import { DenialInboxPage } from './pages/inbox/DenialInboxPage';
 import { CostRoute } from './pages/cost/CostRoute';
 import { TasksMinePage } from './pages/tasks/TasksMinePage';
 
+import { RealSignInPage } from './pages/sign-in/RealSignInPage';
+
 export function AppRoutes(): JSX.Element {
+  const isRealAuth = import.meta.env.VITE_API_MODE === 'real';
+
   return (
     <Routes>
-      <Route path="/sign-in" element={<SignInPage />} />
+      <Route path="/sign-in" element={isRealAuth ? <RealSignInPage /> : <SignInPage />} />
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route index element={<Navigate to="/inbox" replace />} />

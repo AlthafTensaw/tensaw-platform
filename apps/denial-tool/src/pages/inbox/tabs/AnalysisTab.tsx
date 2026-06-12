@@ -109,6 +109,7 @@ export function AnalysisTab({ row }: AnalysisTabProps): JSX.Element {
     // Alternate suggestions could come from classification.alternate_categories
     // but for now we mock placeholders — BE doesn't expose this yet.
   ];
+  console.log(denialPattern)
 
   return (
     <div>

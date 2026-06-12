@@ -30,8 +30,8 @@ export function ReferencePane({ row }: ReferencePaneProps): JSX.Element {
   // Fetch counts for badge display on tab strip (cheap — caches via React Query)
   const { data: notesData } = useNotes(claimId);
   const { data: filesData } = useFiles(claimId);
-  const notesCount = notesData?.notes.length ?? 0;
-  const filesCount = filesData?.files.length ?? 0;
+  const notesCount = notesData?.notes?.length ?? 0;
+  const filesCount = filesData?.files?.length ?? 0;
 
   return (
     <div className="flex flex-col overflow-hidden border-l border-border bg-muted/30">

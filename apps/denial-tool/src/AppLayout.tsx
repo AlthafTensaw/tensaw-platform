@@ -3,7 +3,7 @@ import { AppShell } from '@tensaw/design-system/layout';
 import { TopNav } from '@tensaw/design-system/navigation';
 import { DropdownMenu } from '@tensaw/design-system/overlays';
 import { useActionQuery } from '@tensaw/actions';
-import { useAuthStore } from '@tensaw/runtime';
+import { useAuthStore, getTokenProvider } from '@tensaw/runtime';
 import { usePermissions } from './auth/permissions';
 import type { TasksMineResponse } from './actions/schemas';
 
@@ -125,8 +125,9 @@ export function AppLayout(): JSX.Element {
       <button
         type="button"
         className="block w-full rounded-md px-3 py-2 text-left text-sm hover:bg-muted"
-        onClick={() => {
-          signOut();
+        onClick={async () => {
+          await getTokenProvider().signOut(); // Clears AWS Amplify tokens
+          await signOut(); // Clears local Zustand state
           navigate('/sign-in');
         }}
       >
