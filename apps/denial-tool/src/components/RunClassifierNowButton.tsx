@@ -12,20 +12,20 @@
  */
 
 import { ActionButton } from '@tensaw/wired-components';
-import { usePermissions } from '../auth/permissions';
 import type { Classification } from '../actions/schemas';
 
 interface RunClassifierNowButtonProps {
   claimId: number;
+  canReclassify?: boolean;
   onClassified?: (next: Classification) => void;
 }
 
 export function RunClassifierNowButton({
   claimId,
+  canReclassify,
   onClassified,
 }: RunClassifierNowButtonProps) {
-  const { has } = usePermissions();
-  if (!has('denial.classify_claim')) return null;
+  if (!canReclassify) return null;
 
   return (
     <ActionButton<{ claim_id: number }, Classification>

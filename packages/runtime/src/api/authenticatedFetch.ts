@@ -96,9 +96,12 @@ function generateRequestId(): string {
 
 async function buildHeaders(
   extra?: HeadersInit,
+  isMultipart?: boolean
 ): Promise<Headers> {
   const headers = new Headers(extra);
-  headers.set('Content-Type', 'application/json');
+  if (!isMultipart) {
+    headers.set('Content-Type', 'application/json');
+  }
   headers.set('Accept', 'application/json');
   headers.set('X-Correlation-Id', generateCorrelationId());
   headers.set('X-Request-Id', generateRequestId());
@@ -127,7 +130,8 @@ async function performFetch(
   path: string,
   init: AuthenticatedFetchInit,
 ): Promise<{ response: Response; timeoutMs: number }> {
-  const headers = await buildHeaders(init.headers);
+  const isMultipart = typeof FormData !== 'undefined' && init.body instanceof FormData;
+  const headers = await buildHeaders(init.headers, isMultipart);
   const timeoutMs = init.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const controller = new AbortController();
   const timer = setTimeout(() => { controller.abort(); }, timeoutMs);
@@ -136,7 +140,9 @@ async function performFetch(
     const response = await fetch(`${config.api.baseUrl}${path}`, {
       ...init,
       headers,
-      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+      body: init.body !== undefined 
+        ? (isMultipart ? (init.body as FormData) : JSON.stringify(init.body)) 
+        : undefined,
       signal: init.signal ?? controller.signal,
     });
     return { response, timeoutMs };

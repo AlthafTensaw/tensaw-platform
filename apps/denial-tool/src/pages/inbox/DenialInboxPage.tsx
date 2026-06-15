@@ -32,9 +32,12 @@ import { WorkPane } from './WorkPane';
 import { ReferencePane } from './ReferencePane';
 import { EmptyWorkPane } from './EmptyWorkPane';
 import { CategoryProvider } from './CategoryContext';
+import { usePermissions } from '../../auth/permissions';
 
 export function DenialInboxPage(): JSX.Element {
   const { filters, setFilter, clearAll } = useWorklistFilters();
+  const { has } = usePermissions();
+  const canReclassify = has('denial.classify_claim');
   const [page, setPage] = useState(1);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [multiSelectIds, setMultiSelectIds] = useState<string[]>([]);
@@ -120,7 +123,7 @@ export function DenialInboxPage(): JSX.Element {
         />
 
         {selectedRow !== null ? (
-          <WorkPane row={selectedRow} onMutated={handleMutated} />
+          <WorkPane row={selectedRow} canReclassify={canReclassify} onMutated={handleMutated} />
         ) : (
           <EmptyWorkPane loading={isLoading} />
         )}

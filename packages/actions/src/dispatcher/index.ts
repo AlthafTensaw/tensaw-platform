@@ -558,6 +558,29 @@ async function runHttpToData(
   const { method, path, remainder } = resolved;
   const timeoutMs = decl.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
+  if (decl.actionId === 'case.file.upload') {
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement | null;
+    const selectedFileBlob = fileInput?.files?.[0];
+    if (!selectedFileBlob) {
+      throw new ApiError('BAD_REQUEST', 400, 'No file selected in picker');
+    }
+    const formData = new FormData();
+    formData.append('file', selectedFileBlob);
+    formData.append('file_type', String(request.file_type));
+    formData.append('file_name', String(request.file_name));
+    formData.append('idempotency_key', String(request.idempotency_key));
+
+    return authenticatedFetch(path, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Idempotency-Key': String(request.idempotency_key),
+      },
+      timeoutMs,
+      responseSchema: decl.response,
+    });
+  }
+
   if (method === 'GET' || method === 'DELETE') {
     return authenticatedFetch(`${path}${buildQueryString(remainder)}`, {
       method,

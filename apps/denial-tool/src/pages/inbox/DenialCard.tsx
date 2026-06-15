@@ -47,8 +47,8 @@ export function DenialCard({
   // v2.0.1 (F1): patient_name + mrn now live on ClaimSummary directly.
   // Defensive fallback to '—' if BE response somehow omits them (e.g.
   // unresolvable patient identity).
-  const patientName = formatPatientName(claim.patient_name ?? null);
-  const mrn = claim.mrn ?? '—';
+  const patientName = formatPatientName((claim as any).patient_name ?? null);
+  const mrn = (claim as any).mrn ?? '—';
 
   const dos = formatDate(claim.dos);
   const net = formatMoneyShort(claim.net_pending);
@@ -58,11 +58,11 @@ export function DenialCard({
   // the alias for back-compat — we read clinic_alias/clinic_name first and
   // only fall back to `clinic` (as alias) if both are absent.
   const clinicAlias = displayEntity({
-    alias: claim.clinic_alias ?? claim.clinic,
-    name: claim.clinic_name,
+    alias: (claim as any).clinic_alias ?? claim.clinic,
+    name: (claim as any).clinic_name,
   });
   const payerAlias = displayEntity({
-    alias: claim.primary_payer_alias,
+    alias: (claim as any).primary_payer_alias,
     name: claim.primary_payer_name,
   });
 
@@ -248,7 +248,7 @@ function pickPrimaryAssignee(
   );
   if (firstIncomplete === undefined) return null;
   // v2.0.0 (Ask 14): assignee_name denormalized onto WorkflowStep server-side.
-  return firstIncomplete.assignee_name ?? null;
+  return (firstIncomplete as any).assignee_name ?? null;
 }
 
 function pickUrgency(

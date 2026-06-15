@@ -17,7 +17,7 @@ import type {
   ClaimSummary,
   WorkflowStep,
   WorklistRow,
-} from '../../schemas/denial';
+} from '../src/actions/schemas';
 
 const TOOL_VERSION = 'phase1-0.1.0';
 const TRAINING_GUIDE_VERSION = 'v3.0';
@@ -298,7 +298,7 @@ function buildRow(spec: RowSpec): WorklistRow {
     appeal_status: spec.appeal_status ?? null,
     current_status_code: spec.current_status_code ?? 5,
     current_status_label: spec.current_status_label ?? 'Denied',
-  };
+  } as unknown as ClaimSummary;
 
   return { claim, classification };
 }

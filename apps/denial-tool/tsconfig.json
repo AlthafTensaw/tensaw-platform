@@ -1,13 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "./src",
+    "ignoreDeprecations": "6.0",
+    "rootDir": ".",
     "outDir": "./dist",
     "composite": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "types": ["vite/client"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "mock-server-patches/**/*", "stubs/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"],
   "references": [
     { "path": "../../packages/runtime" },

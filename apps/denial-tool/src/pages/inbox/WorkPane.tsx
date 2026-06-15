@@ -36,10 +36,11 @@ import { useCategoryColor } from './CategoryContext';
 
 interface WorkPaneProps {
   row: WorklistRow;
+  canReclassify?: boolean;
   onMutated: () => void;
 }
 
-export function WorkPane({ row, onMutated }: WorkPaneProps): JSX.Element {
+export function WorkPane({ row, canReclassify, onMutated }: WorkPaneProps): JSX.Element {
   const { has } = usePermissions();
   const canAct = has('denial.act');
   const colorFor = useCategoryColor();
@@ -219,6 +220,7 @@ export function WorkPane({ row, onMutated }: WorkPaneProps): JSX.Element {
         </button>
         <RunClassifierNowButton
           claimId={Number(claimId)}
+          canReclassify={canReclassify}
           onClassified={onMutated}
         />
         <span className="ml-auto text-[11px] text-muted-foreground">

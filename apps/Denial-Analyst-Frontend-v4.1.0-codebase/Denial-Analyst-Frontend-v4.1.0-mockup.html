@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DAT Frontend v4.1 — engine-handler mockup</title>
+<style>
+  :root{
+    --bg:#f1f5f9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+    --blue:#2563eb; --blue-50:#eff6ff; --emerald:#059669; --amber-bg:#fef3c7; --amber-bd:#fcd34d; --amber-ink:#92400e;
+    --red:#dc2626; --purple:#7c3aed;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  .wrap{max-width:1320px;margin:0 auto;padding:16px}
+  h1{font-size:18px;margin:0 0 2px}
+  .sub{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+  .note{background:#fffbeb;border:1px solid var(--amber-bd);border-radius:8px;padding:10px 12px;font-size:12px;color:#78350f;margin-bottom:14px}
+  .note b{color:#92400e}
+
+  /* top nav */
+  .nav{display:flex;align-items:center;gap:10px;height:48px;background:#0f172a;border-radius:10px 10px 0 0;padding:0 14px;color:#e2e8f0}
+  .brand{font-weight:700;letter-spacing:.3px}
+  .brand span{color:#60a5fa}
+  .qsw{display:flex;align-items:center;gap:8px;background:#1e293b;border-radius:8px;padding:5px 10px;font-size:12.5px}
+  .qsw .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8}
+  .badge-c{background:#334155;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700}
+  .nav .right{margin-left:auto;display:flex;gap:8px;align-items:center;font-size:12.5px;color:#cbd5e1}
+  .avatar{width:26px;height:26px;border-radius:999px;background:#1d4ed8;color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+
+  /* three pane */
+  .panes{display:grid;grid-template-columns:300px 1fr 320px;gap:0;background:var(--panel);border:1px solid var(--line);border-top:0;border-radius:0 0 10px 10px;overflow:hidden;min-height:620px}
+  .col{display:flex;flex-direction:column;min-width:0}
+  .col + .col{border-left:1px solid var(--line)}
+  .col-h{padding:8px 12px;border-bottom:1px solid var(--line);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:flex;gap:8px;align-items:center}
+
+  /* filters */
+  .filters{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);background:#f8fafc}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:3px 9px;font-size:11px;color:#334155}
+  .chip.active{border-color:#93c5fd;background:var(--blue-50);color:#1e3a8a}
+  .chip.hd{border-color:var(--amber-bd);background:var(--amber-bg);color:var(--amber-ink)}
+
+  /* worklist cards */
+  .cards{padding:8px;overflow:auto;display:flex;flex-direction:column;gap:6px}
+  .card{border:1px solid var(--line);border-radius:8px;background:#fff;padding:9px 10px;cursor:default}
+  .card.sel{border-color:#93c5fd;box-shadow:0 0 0 1px #bfdbfe inset}
+  .card .r1{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+  .ttype{font-weight:650;font-size:13px}
+  .pri{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;border-radius:4px;padding:1px 6px}
+  .pri.high{background:#fee2e2;color:#991b1b}
+  .r2{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-top:3px}
+  .pname{font-size:12.5px;color:#1e293b}
+  .mrn{color:var(--muted);font-size:11px;margin-left:6px}
+  .money{font-weight:700;font-variant-numeric:tabular-nums}
+  .r3{color:var(--muted);font-size:11px;margin-top:3px}
+  .r4{display:flex;gap:6px;margin-top:6px;align-items:center}
+  .team{background:#f1f5f9;border-radius:5px;padding:1px 7px;font-size:10.5px;color:#475569}
+  .hd{border:1px solid var(--amber-bd);background:var(--amber-bg);color:var(--amber-ink);border-radius:4px;padding:1px 6px;font-size:9.5px;font-weight:800;letter-spacing:.06em}
+
+  /* work pane */
+  .wp-h{padding:12px 16px;border-bottom:1px solid var(--line)}
+  .wp-h .top{display:flex;align-items:center;gap:8px}
+  .wp-h h2{font-size:16px;margin:0}
+  .pillstate{border-radius:5px;padding:1px 7px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:var(--blue-50);color:#1d4ed8}
+  .wp-h .meta{color:var(--muted);font-size:11.5px;margin-top:2px;font-variant-numeric:tabular-nums}
+  .tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}
+  .tile{border:1px solid var(--line);background:#f8fafc;border-radius:6px;padding:6px 9px}
+  .tile.hd{border-color:var(--amber-bd);background:var(--amber-bg)}
+  .tile .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+  .tile .v{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+  .tile .v.paid{color:var(--emerald)} .tile .v.hd{color:var(--amber-ink)}
+
+  .strip{display:flex;align-items:center;gap:8px;padding:7px 16px;border-bottom:1px solid var(--line);background:#f8fafc;font-size:12px}
+  .dot{width:8px;height:8px;border-radius:999px;background:#3b82f6;display:inline-block}
+
+  .wp-body{padding:14px 16px;overflow:auto}
+  .rec{border:1px solid #bfdbfe;background:rgba(239,246,255,.5);border-radius:10px;padding:11px}
+  .rec .h{display:flex;align-items:center;gap:8px}
+  .rec .pd{width:8px;height:8px;border-radius:999px;background:var(--purple)}
+  .rec .tag{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#1d4ed8}
+  .rec .conf{margin-left:auto;font-family:ui-monospace,monospace;font-size:11px;color:#1e40af}
+  .rec .cat{font-weight:700;margin-top:5px}
+  .rec p{margin:8px 0 0;border-top:1px solid #dbeafe;padding-top:8px;color:#334155;font-size:12px}
+  .rec .ref{font-size:10.5px;font-style:italic;color:var(--muted);margin-top:6px}
+
+  .form{margin-top:14px}
+  .ct{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .ctt{font-size:14px;font-weight:700;margin:2px 0 10px;border-bottom:1px solid var(--line);padding-bottom:10px}
+  .field{margin:11px 0}
+  .field > label{display:block;font-size:11.5px;font-weight:600;color:#334155;margin-bottom:4px}
+  .req{color:var(--red)}
+  select,input[type=text],input[type=number],textarea{width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:6px 9px;font:inherit;font-size:13px}
+  .seg{display:inline-flex;border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:2px}
+  .seg button{border:0;background:transparent;border-radius:5px;padding:4px 12px;font:inherit;font-size:12px;font-weight:600;color:#475569;cursor:default}
+  .seg button.on{background:#fff;color:#0f172a;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+  .bar{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding:11px 16px;margin:14px -16px -14px}
+  .btn{border-radius:7px;padding:7px 14px;font:inherit;font-size:13px;font-weight:700;border:1px solid transparent;cursor:default}
+  .btn.primary{background:var(--emerald);color:#fff;margin-left:auto}
+  .btn.ghost{background:#fff;border-color:#fcd34d;color:#92400e}
+
+  /* reference panel */
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 8px}
+  .tab{padding:9px 10px;font-size:12px;color:var(--muted);border-bottom:2px solid transparent}
+  .tab.on{color:#1d4ed8;border-bottom-color:#1d4ed8;font-weight:650}
+  .rp-body{padding:12px;overflow:auto}
+  .factbox{border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff}
+  .factbox h3{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#475569;margin:0 0 8px}
+  .frow{display:flex;gap:8px;margin:5px 0}
+  .frow dt{min-width:108px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0}
+  .frow dd{margin:0;font-size:12.5px}
+
+  /* gallery */
+  .gal{margin-top:22px}
+  .gal h2{font-size:14px;margin:0 0 4px}
+  .gal .sub{margin-bottom:10px}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .fcard{border:1px solid var(--line);border-radius:10px;background:#fff;padding:13px}
+  .fcard .ct{margin-bottom:1px}
+  .fcard .ctt{font-size:13px;border:0;padding:0;margin:0 0 9px}
+  .hintp{color:var(--muted);font-size:11.5px;margin:-4px 0 8px}
+  footer{color:var(--muted);font-size:11px;margin-top:18px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Denial Analyst Tool — Frontend v4.1</h1>
+  <div class="sub">Engine-handler model · the engine dispatches tasks to DMS; the analyst <b>completes the dispatched task</b>.</div>
+
+  <div class="note">
+    <b>What changed from v4.0.0.</b> No LLM Accept/Override step — the recommendation is <b>context</b> while you complete the active task.
+    No case-status lifecycle, no personal queue or “returned to you” bar, no high-dollar sidecar (it’s a <b>flag</b>). The worklist is a list of
+    <b>dispatched tasks</b> (one row per task), keyed by <code>task_type</code>.
+  </div>
+
+  <!-- top nav -->
+  <div class="nav">
+    <div class="brand">Primrose <span>DAT</span></div>
+    <div class="qsw"><span class="lbl">Queue</span> Denial Intake <span class="badge-c">6</span> ▾</div>
+    <div class="right">Cost · <span class="avatar">VK</span> Vipin K.</div>
+  </div>
+
+  <!-- three pane -->
+  <div class="panes">
+    <!-- worklist -->
+    <div class="col">
+      <div class="col-h">Worklist</div>
+      <div class="filters">
+        <span class="chip active">Task: Triage denial ✕</span>
+        <span class="chip">Clinic</span>
+        <span class="chip">Payer</span>
+        <span class="chip">Aging</span>
+        <span class="chip">Priority</span>
+        <span class="chip hd">High-dollar</span>
+      </div>
+      <div class="col-h" style="border-top:0">Denial Intake · 6 tasks</div>
+      <div class="cards">
+        <div class="card sel">
+          <div class="r1"><span class="ttype">Triage denial</span><span class="pri high">high</span></div>
+          <div class="r2"><span><span class="pname">Henderson, Joel</span><span class="mrn">72834</span></span><span class="money">$840</span></div>
+          <div class="r3">05/03 · CAH · Humana MA · 0-29 day</div>
+          <div class="r4"><span class="team">Denial Intake</span><span class="hd">HD</span></div>
+        </div>
+        <div class="card">
+          <div class="r1"><span class="ttype">Triage denial</span></div>
+          <div class="r2"><span><span class="pname">Alvarez, Mia</span><span class="mrn">61120</span></span><span class="money">$312</span></div>
+          <div class="r3">04/28 · LSAT · Aetna BH · 30-59 day</div>
+          <div class="r4"><span class="team">Denial Intake</span></div>
+        </div>
+        <div class="card">
+          <div class="r1"><span class="ttype">Triage denial</span></div>
+          <div class="r2"><span><span class="pname">Okafor, Daniel</span><span class="mrn">88341</span></span><span class="money">$1,205</span></div>
+          <div class="r3">04/19 · CAH · UHC · 60-89 day</div>
+          <div class="r4"><span class="team">Denial Intake</span><span class="hd">HD</span></div>
+        </div>
+        <div class="card">
+          <div class="r1"><span class="ttype">Triage denial</span></div>
+          <div class="r2"><span><span class="pname">Park, Susan</span><span class="mrn">22910</span></span><span class="money">$96</span></div>
+          <div class="r3">05/10 · PRIM · Cigna · 0-29 day</div>
+          <div class="r4"><span class="team">Denial Intake</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- work pane -->
+    <div class="col">
+      <div class="col-h">Work area</div>
+      <div class="wp-h">
+        <div class="top"><h2>Henderson, Joel</h2><span class="hd">HD</span><span class="pillstate">TRIAGE</span></div>
+        <div class="meta">MRN 72834 · DOS 05/03 · Claim #300138 · Dr. M. Patel · CAH Main</div>
+        <div class="tiles">
+          <div class="tile"><div class="k">Billed</div><div class="v">$1,200</div></div>
+          <div class="tile"><div class="k">Paid</div><div class="v paid">$360</div></div>
+          <div class="tile"><div class="k">Pending 1°</div><div class="v">$840</div></div>
+          <div class="tile hd"><div class="k">Net</div><div class="v hd">$840</div></div>
+          <div class="tile"><div class="k">Payer</div><div class="v" style="font-size:12px">Humana MA</div></div>
+        </div>
+      </div>
+      <div class="strip"><span style="font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#64748b">Current</span>
+        <span class="dot"></span><b>Triage denial</b><span class="team">Denial Intake</span>
+        <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:#94a3b8">TRIAGE</span>
+      </div>
+      <div class="wp-body">
+        <div class="rec">
+          <div class="h"><span class="pd"></span><span class="tag">LLM recommendation · context</span><span class="conf">92%</span></div>
+          <div class="cat">Medical necessity</div>
+          <p>CO-50 on 99214 plus a prior pattern of similar denials for this payer.</p>
+          <div class="ref">Reference only — complete the active task below to advance the case.</div>
+        </div>
+
+        <div class="form">
+          <div class="ct">Current task</div>
+          <div class="ctt">Triage denial</div>
+          <div class="field"><label>Clarification type <span class="req">*</span></label>
+            <select><option>Medical necessity</option><option>Authorization</option><option>Coding</option></select></div>
+          <div class="field"><label>Appeal policy <span class="req">*</span></label>
+            <select><option>One appeal</option><option>Two appeal</option><option>No appeal</option></select></div>
+          <div class="field"><label>High-dollar?</label>
+            <div class="seg"><button class="on">Yes</button><button>No</button></div></div>
+          <div class="field"><label>Direct facility access?</label>
+            <div class="seg"><button>Yes</button><button class="on">No</button></div></div>
+          <div class="field"><label>Completion note</label><textarea rows="2" placeholder="Anything the next handler should know"></textarea></div>
+          <div class="bar"><button class="btn ghost">Need more info</button><button class="btn primary">Complete triage</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- reference panel -->
+    <div class="col">
+      <div class="col-h">Reference panel</div>
+      <div class="tabs">
+        <div class="tab on">Analysis</div><div class="tab">Payments</div><div class="tab">Notes</div><div class="tab">Files</div><div class="tab">Appeal</div>
+      </div>
+      <div class="rp-body">
+        <div class="factbox">
+          <h3>Case facts</h3>
+          <dl>
+            <div class="frow"><dt>Engine state</dt><dd>TRIAGE</dd></div>
+            <div class="frow"><dt>Clarification</dt><dd>Medical Necessity</dd></div>
+            <div class="frow"><dt>High-dollar</dt><dd>Yes (≥ $750)</dd></div>
+            <div class="frow"><dt>Appeal policy</dt><dd>One Appeal</dd></div>
+          </dl>
+        </div>
+        <div class="factbox" style="margin-top:12px">
+          <h3>Claim</h3>
+          <dl>
+            <div class="frow"><dt>Claim #</dt><dd>300138</dd></div>
+            <div class="frow"><dt>MRN</dt><dd>72834</dd></div>
+            <div class="frow"><dt>Payer</dt><dd>Humana MA</dd></div>
+            <div class="frow"><dt>Dx</dt><dd>J45.20</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- form gallery -->
+  <div class="gal">
+    <h2>Task-form gallery</h2>
+    <div class="sub">A sample of the 17 typed completion forms. Decision forms map a field to the outcome (no separate buttons).</div>
+    <div class="grid">
+
+      <div class="fcard">
+        <div class="ct">Coding · CODER_REVIEW_RECORD</div>
+        <div class="ctt">Coding review</div>
+        <div class="hintp">Verify CPT / dx / modifiers and recommend.</div>
+        <div class="field"><label>CPT verified?</label><div class="seg"><button class="on">Yes</button><button>No</button></div></div>
+        <div class="field"><label>Recommendation <span class="req">*</span></label>
+          <div class="seg"><button class="on">Refile (corrections)</button><button>Proceed to appeal</button></div></div>
+        <div class="bar"><button class="btn primary">Submit review</button></div>
+      </div>
+
+      <div class="fcard">
+        <div class="ct">Resolution · RESOLUTION_FILE_APPEAL</div>
+        <div class="ctt">File appeal</div>
+        <div class="hintp">Level, evidence, method, tracking.</div>
+        <div class="field"><label>Appeal level <span class="req">*</span></label><input type="number" value="2"></div>
+        <div class="field"><label>Submission method <span class="req">*</span></label>
+          <div class="seg"><button class="on">Portal</button><button>Fax</button><button>Mail</button></div></div>
+        <div class="field"><label>Tracking # <span class="req">*</span></label><input type="text" placeholder="APP-2026-061201"></div>
+        <div class="bar"><button class="btn primary">Mark appeal filed</button></div>
+      </div>
+
+      <div class="fcard">
+        <div class="ct">Account Management · AM_DECIDE_DISPOSITION</div>
+        <div class="ctt">AM disposition</div>
+        <div class="hintp">Write-off / cash-rate / escalate.</div>
+        <div class="field"><label>Disposition <span class="req">*</span></label>
+          <div class="seg"><button>Write off</button><button class="on">Cash rate</button><button>Escalate</button></div></div>
+        <div class="bar"><button class="btn primary">Record disposition</button></div>
+      </div>
+
+      <div class="fcard">
+        <div class="ct">AR Analyst · ANALYST_AWAIT_PAYER_RESPONSE <span style="color:#7c3aed">· decision</span></div>
+        <div class="ctt">Await payer response</div>
+        <div class="hintp">paid/overturned → SUCCESS · waiting → NEEDS_INFO · denied/upheld → FAIL_FATAL</div>
+        <div class="field"><label>Payer decision <span class="req">*</span></label>
+          <select><option>Paid</option><option>Overturned (approved)</option><option>Still waiting</option><option>Denied</option><option>Upheld</option></select></div>
+        <div class="bar"><button class="btn primary">Record — resolved</button></div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>Static mockup · DAT Frontend v4.1 · engine-handler model · not interactive</footer>
+</div>
+</body>
+</html>

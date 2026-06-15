@@ -17,7 +17,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import { RequireAuth, RequirePermission } from './auth/RequireAuth';
 import { SignInPage } from './pages/sign-in/SignInPage';
-import { DenialInboxPage } from './pages/inbox/DenialInboxPage';
+import { ThreePaneShell } from './pages/ThreePaneShell';
 import { CostRoute } from './pages/cost/CostRoute';
 import { TasksMinePage } from './pages/tasks/TasksMinePage';
 
@@ -35,7 +35,7 @@ export function AppRoutes(): JSX.Element {
           <Route
             element={<RequirePermission permission="denial.read" />}
           >
-            <Route path="/inbox" element={<DenialInboxPage />} />
+            <Route path="/inbox" element={<ThreePaneShell />} />
             <Route path="/worklist" element={<Navigate to="/inbox" replace />} />
             <Route path="/tasks" element={<TasksMinePage />} />
           </Route>

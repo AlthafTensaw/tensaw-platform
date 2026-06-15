@@ -26,6 +26,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "paths": {
       "@tensaw/runtime": ["packages/runtime/src/index.ts"],

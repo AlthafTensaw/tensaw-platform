@@ -28,7 +28,7 @@ const registry = new Map<string, ActionDeclaration>();
  */
 const mutationInvalidations = new Map<string, Set<string>>();
 
-const ACTION_ID_PATTERN = /^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/;
+const ACTION_ID_PATTERN = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/;
 
 /**
  * Define an action and register it. Overloaded so the return type matches the

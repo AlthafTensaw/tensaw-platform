@@ -10,9 +10,13 @@ import './denial-tool.css';
 import { AppThemeProvider } from './AppTheme';
 import { AppRoutes } from './routes';
 import { bootstrap } from './bootstrap';
+import { registerCaseActions } from './actions/index-v4';
 import { Amplify } from 'aws-amplify';
 import { fetchAuthSession, signOut as amplifySignOut } from 'aws-amplify/auth';
 import { setTokenProvider } from '@tensaw/runtime';
+
+// Register v4 action definitions (case.detail, case.worklist, etc.)
+registerCaseActions();
 
 Amplify.configure({
   Auth: {

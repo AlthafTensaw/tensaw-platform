@@ -24,7 +24,7 @@ export function loadUserFromToken(token: string) {
   let email = 'user@example.com';
   let payload: any = {};
   try {
-    payload = JSON.parse(atob(token.split('.')[1]));
+    payload = JSON.parse(atob(token.split('.')[1] || ''));
     email = payload.email || email;
   } catch {}
 
@@ -55,13 +55,23 @@ async function doBootstrap(): Promise<void> {
   if (import.meta.env.DEV && import.meta.env.VITE_API_MODE !== 'real') {
     try {
       const { setupWorker } = await import('msw/browser');
-      const { buildDenialHandlers } = await import('@tensaw/mock-server');
-      const { buildDenialV3Handlers } = await import('../mock-server-patches/denialV3Handlers');
       const { config } = await import('@tensaw/runtime');
-      const worker = setupWorker(
-        ...buildDenialHandlers(config.api.baseUrl),
-        ...buildDenialV3Handlers(config.api.baseUrl),
-      );
+      
+      let handlers: any[] = [];
+      if (import.meta.env.VITE_API_VERSION === 'v4') {
+        const { handlersV4, seedV4 } = await import('./mocks/v4');
+        seedV4();
+        handlers = handlersV4(config.api.baseUrl);
+      } else {
+        const { buildDenialHandlers } = await import('@tensaw/mock-server');
+        const { buildDenialV3Handlers } = await import('../mock-server-patches/denialV3Handlers');
+        handlers = [
+          ...buildDenialHandlers(config.api.baseUrl),
+          ...buildDenialV3Handlers(config.api.baseUrl),
+        ];
+      }
+      
+      const worker = setupWorker(...handlers);
       await worker.start({ quiet: true, onUnhandledRequest: 'bypass' });
     } catch (e) {
       console.warn('[bootstrap] MSW failed to start:', e);
